@@ -1,10 +1,10 @@
 {
   "name": "kalbela_jobs_backend",
-  "author":[{
-      "name": "Mahadi Hasan",
-      "email": "codewithmahadihasan@gmail.com"
-
-  }],
+ "author": {
+    "name": "Md.Mahadi Hasan",
+    "email": "codewithmahadihasan@gmail.com",
+    "url": "https://learnwithmahadi.me"
+},
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
