@@ -5,7 +5,8 @@
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>API Documentation</title>
-      <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+      <link rel="icon" type="image/svg+xml"
+            href="https://yt3.googleusercontent.com/0dP9hG1h-7qzF2RNU7w_Q1kVh_YOnP9LS9r-v1FgLt9tl6Tr_OQHMF9dxTEtEMSqmcO2E_dLOHM=s900-c-k-c0x00ffffff-no-rj" />
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.24.7/antd.dark.min.css">
       <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
@@ -189,32 +190,6 @@
                               }
                         }]
                   },
-                  User: {
-                        icon: 'user',
-                        items: [{
-                              key: '2',
-                              name: 'Create User',
-                              icon: 'user-plus',
-                              endpoint: '/api/v1/users',
-                              method: 'POST',
-                              description: 'Create a new user',
-                              parameters: [
-                                    { name: 'username', type: 'String', required: 'Yes', description: 'User\'s username' },
-                                    { name: 'email', type: 'String', required: 'Yes', description: 'User\'s email address' },
-                                    { name: 'password', type: 'String', required: 'Yes', description: 'User\'s password' }
-                              ],
-                              response: {
-                                    status: 201,
-                                    message: "User created successfully",
-                                    user: {
-                                          id: 12345,
-                                          username: "newuser",
-                                          email: "newuser@example.com",
-                                          created_at: "2023-05-20T10:30:00Z"
-                                    }
-                              }
-                        }]
-                  },
                   Image: {
                         icon: 'image',
                         items: [
@@ -271,9 +246,12 @@
                                                 required: 'Yes',
                                                 description: 'User information',
                                                 subParameters: [
-                                                      { name: 'name', type: 'String', required: 'Yes', description: 'User\'s full name' },
+                                                      { name: 'username', type: 'String', required: 'Yes', description: 'User\'s username' },
                                                       { name: 'email', type: 'String', required: 'Yes', description: 'User\'s email address' },
-                                                      { name: 'password', type: 'String', required: 'Yes', description: 'User\'s password' }
+                                                      { name: 'password', type: 'String', required: 'Yes', description: 'User\'s password' },
+                                                      { name: 'role', type: 'String', required: 'Yes', description: 'User\'s role' },
+                                                      { name: 'phone_number', type: 'String', required: 'No', description: 'User\'s phone number' },
+                                                      { name: 'profile_image', type: 'String', required: 'No', description: 'User\'s profile image' }
                                                 ]
                                           },
                                           {
@@ -283,8 +261,10 @@
                                                 description: 'Workspace information',
                                                 subParameters: [
                                                       { name: 'name', type: 'String', required: 'Yes', description: 'Name of the workspace' },
-                                                      { name: 'image', type: 'String', required: 'Yes', description: 'URL of the workspace image' },
-                                                      { name: 'terms', type: 'String', required: 'Yes', description: 'Terms of service agreement' }
+                                                      { name: 'logo', type: 'String', required: 'Yes', description: 'URL of the workspace logo' },
+                                                      { name: 'terms', type: 'String', required: 'Yes', description: 'Terms of service agreement' },
+                                                      { name: 'status', type: 'Boolean', required: 'No', description: 'Workspace status' }
+
                                                 ]
                                           }
                                     ],
