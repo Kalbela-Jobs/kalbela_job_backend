@@ -4,6 +4,7 @@ const image_router = require('../modules/image/image_router');  // Adjust the pa
 const initial_route = require('../modules/hooks/initial_route'); // Adjust the path if necessary
 const auth_router = require('../modules/auth/auth_router'); // Adjust the path if necessary
 const package_router = require('../modules/package/package_router'); // Adjust the path if necessary
+const job_router = require('../modules/jobs/job_route'); // Adjust the path if necessary
 
 // Define module routes
 const modulesRoutes = [
@@ -22,6 +23,9 @@ const modulesRoutes = [
       {
             path: '/package',
             route: package_router,
+      }, {
+            path: '/jobs',
+            route: job_router,
       }
 ];
 
