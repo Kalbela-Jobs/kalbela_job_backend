@@ -4,9 +4,9 @@ const { image_collection } = require("../../collection/collections/image_collect
 const { response_sender } = require("../../modules/hooks/respose_sender");
 
 const upload_image = async (req, res, next) => {
+
       try {
             const imageBuffer = req.file.buffer;
-            const shopId = req.query.shopId;
             const mimeType = req.file.mimetype; //
             const image_title = req.body?.title;
 
@@ -33,9 +33,7 @@ const upload_image = async (req, res, next) => {
                   createdAt: new Date(),
             };
 
-            if (shopId) {
-                  data.shopId = shopId;
-            }
+
 
             if (image_title) {
                   data.title = image_title;

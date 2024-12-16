@@ -1,5 +1,5 @@
 const express = require('express');
-const { get_all_jobs, get_job_search_result, update_job, create_job, delete_job } = require('./module');
+const { get_all_jobs, get_job_search_result, update_job, create_job, delete_job } = require('./job_module');
 const router = express.Router();
 
 

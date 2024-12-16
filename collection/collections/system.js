@@ -2,6 +2,7 @@ const { client } = require("../uri");
 
 const package_collection = client.db('system_collection').collection("packages");
 const jobs_collection = client.db('jobs').collection("job_information");
+const workspace_collection = client.db('organization').collection("workspace");
 
 
-module.exports = { package_collection, jobs_collection };
+module.exports = { package_collection, jobs_collection, workspace_collection };
