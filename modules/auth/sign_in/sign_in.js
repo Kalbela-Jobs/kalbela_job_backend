@@ -1,7 +1,8 @@
 const { ObjectId } = require("mongodb");
 const bcrypt = require('bcrypt');
 const { response_sender } = require("../../hooks/respose_sender");
-const { user_collection, workspace_collection } = require("../../../collection/collections/auth");
+const { user_collection } = require("../../../collection/collections/auth");
+const { workspace_collection } = require("../../../collection/collections/system");
 
 const sign_in = async (req, res, next) => {
       try {
@@ -44,16 +45,13 @@ const sign_in = async (req, res, next) => {
                   });
             }
 
-            // If the user is found and the password is valid, fetch the workspace
             const workspace = await workspace_collection.findOne({ _id: new ObjectId(find_user.workspace_id) });
 
+            delete workspace.staff
 
             const { password, ...userData } = find_user;
             console.log(userData);
 
-            // Set cookies (ensure to serialize if necessary)
-            res.cookie('erp_user', JSON.stringify(userData), { httpOnly: true }); // Set httpOnly for security
-            res.cookie('erp_workspace', JSON.stringify(workspace), { httpOnly: true }); // Set httpOnly for security
 
             return response_sender({
                   res,
@@ -61,7 +59,8 @@ const sign_in = async (req, res, next) => {
                   error: false,
                   data: {
                         user: userData,
-                        workspace
+                        workspace: workspace,
+
                   },
                   message: "User signed in successfully.",
             });
