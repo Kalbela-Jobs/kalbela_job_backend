@@ -17,7 +17,7 @@ const send_email = async ({ email, subject, html, text }) => {
             from: 'no-reply@erp.brightfuturesoft.com', // sender address
             to: email, // list of receivers
             subject: subject, // Subject line
-            text: text, // plain text body
+            text: text,
             html: html // html body
       };
 
