@@ -63,4 +63,36 @@ const create_a_workspace = async (req, res, next) => {
 };
 
 
-module.exports = { create_a_workspace };
+const get_all_workspaces = async (req, res, next) => {
+      try {
+            const workspaces = await workspace_collection.find().toArray();
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Workspaces fetched successfully",
+                  data: workspaces,
+            });
+      } catch (error) {
+            next(error);
+      }
+}
+
+const get_workspace = async (req, res, next) => {
+      try {
+            const { company_website } = req.query;
+            const workspace = await workspace_collection.findOne({ company_website });
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Workspace Information fetched successfully",
+                  data: workspace,
+            });
+      } catch (error) {
+            next(error);
+      }
+}
+
+
+module.exports = { create_a_workspace, get_workspace, get_all_workspaces };
