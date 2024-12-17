@@ -6,6 +6,8 @@ const auth_router = require('../modules/auth/auth_router'); // Adjust the path i
 const package_router = require('../modules/package/package_router'); // Adjust the path if necessary
 const job_router = require('../modules/jobs/job_route'); // Adjust the path if necessary
 const workspace_router = require('../modules/organization/org_router'); // Adjust the path if necessary
+const category_router = require('../modules/category/category_router'); // Adjust the path if necessary
+const job_type_router = require('../modules/job_type/job_type_router'); // Adjust the path if necessary
 
 // Define module routes
 const modulesRoutes = [
@@ -32,6 +34,14 @@ const modulesRoutes = [
       {
             path: '/workspace',
             route: workspace_router,
+      },
+      {
+            path: '/category',
+            route: category_router,
+      },
+      {
+            path: '/job-type',
+            route: job_type_router,
       }
 ];
 
