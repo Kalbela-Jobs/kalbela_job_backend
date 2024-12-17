@@ -413,6 +413,84 @@
                                     }
                               }
                         ]
+                  },
+                  Workspace: {
+                        items: [
+                              {
+                                    key: '12',
+                                    name: 'Get Workspace',
+                                    icon: 'user-plus',
+                                    endpoint: '/api/v1/workspace',
+                                    method: 'GET',
+                                    description: 'Get a workspace',
+                                    parameters: [
+                                          { name: 'token', type: 'String', required: 'No', description: 'Authorization token' },
+
+                                    ],
+                                    response: {
+                                          status_code: 200,
+                                          error: false,
+                                          data: [{
+                                                "_id": "6760b1ed49c069168c90efb8",
+                                                "company_name": "Bright Future Soft",
+                                                "company_website": "brightfuturesoft-bd",
+                                                "logo": "https://kalbela-jobs-backend.vercel.app/api/v1/image/6760b1ed49c069168c90efb7.png",
+                                                "description": "<p>Uttora 18, Rajuk Project, Krishnochura&nbsp;Building</p>",
+                                                "company_size": "51-100",
+                                                "industry": "education",
+                                                "package": "67576f9db97c1c6237017cdb",
+                                                "staff": [
+                                                      {
+                                                            "_id": "6760b1ed49c069168c90efb9",
+                                                            "name": "Md. Rashedul Islam",
+                                                            "email": "f8CQ3@example.com",
+                                                      },
+                                                ],
+                                                "priority": "medium",
+                                                "status": true,
+                                                "updated_at": "2024-12-16T23:04:13.420Z",
+                                                "created_at": "2024-12-16T23:04:13.420Z"
+                                          }],
+                                          message: "Workspace fetched successfully"
+                                    }
+                              }
+                              , {
+                                    key: '13',
+                                    name: 'Get Workspace Information',
+                                    icon: 'user-plus',
+                                    endpoint: '/api/v1/workspace/workspace-info',
+                                    method: 'GET',
+                                    description: 'Get a workspace',
+                                    parameters: [
+                                          { name: 'company_website', type: 'String', required: 'YES', description: 'This is Query Parameter' },
+                                    ],
+                                    response: {
+                                          status_code: 200,
+                                          error: false,
+                                          data: {
+                                                "_id": "6760b1ed49c069168c90efb8",
+                                                "company_name": "Bright Future Soft",
+                                                "company_website": "brightfuturesoft-bd",
+                                                "logo": "https://kalbela-jobs-backend.vercel.app/api/v1/image/6760b1ed49c069168c90efb7.png",
+                                                "description": "<p>Uttora 18, Rajuk Project, Krishnochura&nbsp;Building</p>",
+                                                "company_size": "51-100",
+                                                "industry": "education",
+                                                "package": "67576f9db97c1c6237017cdb",
+                                                "staff": [
+                                                      {
+                                                            "_id": "6760b1ed49c069168c90efb9",
+                                                            "name": "Md. Rashedul Islam",
+                                                            "email": "f8CQ3@example.com",
+                                                      },
+                                                ],
+                                                "priority": "medium",
+                                                "status": true,
+                                                "updated_at": "2024-12-16T23:04:13.420Z",
+                                                "created_at": "2024-12-16T23:04:13.420Z"
+                                          },
+                                          message: "Workspace fetched successfully"
+                                    }
+                              }]
                   }
             };
 
