@@ -319,6 +319,100 @@
                                     }
                               }
                         ]
+                  },
+                  Category: {
+                        icon: 'key',
+                        items: [
+                              {
+                                    key: '8',
+                                    name: 'Create Category',
+                                    icon: 'user-plus',
+                                    endpoint: '/api/v1/category/create',
+                                    method: 'POST',
+                                    description: 'Create a new category',
+                                    parameters: [
+                                          { name: 'name', type: 'String', required: 'Yes', description: 'Category name' },
+                                          { name: 'slag', type: 'String', required: 'Yes', description: 'Category slag' },
+                                          { name: 'image', type: 'file', required: 'Yes', description: 'Category image' }
+                                    ],
+                                    response: {
+                                          status_code: 200,
+                                          error: false,
+                                          data: null,
+                                          message: "Category created successfully"
+                                    }
+                              },
+                              {
+                                    key: '9',
+                                    name: 'Get Category',
+                                    icon: 'user-plus',
+                                    endpoint: '/api/v1/category',
+                                    method: 'GET',
+                                    description: 'Get a category',
+                                    parameters: [
+                                          { name: 'token', type: 'String', required: 'No', description: 'Authorization token' }
+                                    ],
+                                    response: {
+                                          status_code: 200,
+                                          error: false,
+                                          data: [{
+                                                name: "Category Name",
+                                                slag: "category-name",
+                                                image: "https://example.com/category-image.jpg",
+                                                created_at: "2023-05-20T10:30:00Z",
+                                                updated_at: "2023-05-20T10:30:00Z"
+                                          }],
+                                          message: "Categories fetched successfully"
+                                    }
+                              }
+                        ]
+                  },
+                  Job_Type: {
+                        icon: 'key',
+                        items: [
+                              {
+                                    key: '10',
+                                    name: 'Create Job Type',
+                                    icon: 'user-plus',
+                                    endpoint: '/api/v1/job-type/create',
+                                    method: 'POST',
+                                    description: 'Create a new job type',
+                                    parameters: [
+                                          { name: 'name', type: 'String', required: 'Yes', description: 'Job type name' },
+                                          { name: 'slag', type: 'String', required: 'Yes', description: 'Job type slag' },
+                                          { name: 'image', type: 'file', required: 'Yes', description: 'Job type image' }
+                                    ],
+                                    response: {
+                                          status_code: 200,
+                                          error: false,
+                                          data: null,
+                                          message: "Job type created successfully"
+                                    }
+                              },
+                              {
+                                    key: '11',
+                                    name: 'Get Job Type',
+                                    icon: 'user-plus',
+                                    endpoint: '/api/v1/job-type',
+                                    method: 'GET',
+                                    description: 'Get a job type',
+                                    parameters: [
+                                          { name: 'token', type: 'String', required: 'No', description: 'Authorization token' }
+                                    ],
+                                    response: {
+                                          status_code: 200,
+                                          error: false,
+                                          data: [{
+                                                name: "Job Type Name",
+                                                slag: "job-type-name",
+                                                image: "https://example.com/category-image.jpg",
+                                                created_at: "2023-05-20T10:30:00Z",
+                                                updated_at: "2023-05-20T10:30:00Z"
+                                          }],
+                                          message: "Job types fetched successfully"
+                                    }
+                              }
+                        ]
                   }
             };
 
