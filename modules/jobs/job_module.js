@@ -118,7 +118,6 @@ const get_all_jobs = async (req, res, next) => {
       }
 };
 
-// const get_job_search_result = async (req, res, next) => {
 //       try {
 //             // Extract page, limit, and search parameters from the query
 //             const page = parseInt(req.query.page) || 1; // Default page is 1
@@ -290,16 +289,6 @@ const get_workspace_jobs = async (req, res, next) => {
             const jobs = await jobs_collection.find({
                   "company_info.company_id": workspace_id
             })
-                  //       .project({
-                  //       job_title: 1,
-                  //       _id: 1,
-                  //       vacancy: 1,
-                  //       expiry_date: 1,
-                  //       job_type: 1,
-                  //       salary_range: 1,
-                  //       company_info: 1,
-                  //       url: 1,
-                  // })
                   .skip(skip)
                   .limit(limit)
                   .toArray();
@@ -318,11 +307,11 @@ const get_workspace_jobs = async (req, res, next) => {
 
 const get_search_suggestions = async (req, res) => {
       try {
-            const term = req.query.search;
+            const search = req.query.search;
 
             // MongoDB query with regex for case-insensitive matching
             const query = {
-                  term: { $regex: search, $options: "i" },
+                  search: { $regex: search, $options: "i" },
             };
 
             // Retrieve suggestions from the collection
