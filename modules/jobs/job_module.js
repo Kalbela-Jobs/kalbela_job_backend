@@ -91,17 +91,6 @@ const get_all_jobs = async (req, res, next) => {
 
             // Fetch jobs with pagination
             const jobs = await jobs_collection.find({})
-                  //       .project({
-                  //       job_title: 1,
-                  //       _id: 1,
-                  //       vacancy: 1,
-                  //       expiry_date: 1,
-                  //       job_type: 1,
-                  //       salary_range: 1,
-                  //       company_info: 1,
-                  //       url: 1,
-                  //       location: 1,
-                  // })
                   .skip(skip)
                   .limit(limit)
                   .toArray();
@@ -196,6 +185,7 @@ const get_all_jobs = async (req, res, next) => {
 //       }
 // };
 const get_job_search_result = async (req, res, next) => {
+      console.log("get_job_search_result", req.query);
       try {
             const searchQuery = req.query.search || ""; // Get search term from the query string
             const page = parseInt(req.query.page) || 1; // Get the current page from query, default to 1
@@ -222,32 +212,30 @@ const get_job_search_result = async (req, res, next) => {
                   ]
             };
 
-            if (searchQuery.length) {
-                  await search_history_collection.insertOne({ term: searchQuery, timestamp: new Date() });
-            }
+
+
 
             // Perform the search and apply pagination using skip and limit
             const jobs = await jobs_collection
                   .find(searchCondition)
-                  // .project({
-                  //       job_title: 1,
-                  //       _id: 1,
-                  //       vacancy: 1,
-                  //       expiry_date: 1,
-                  //       job_type: 1,
-                  //       salary_range: 1,
-                  //       company_info: 1,
-                  //       url: 1,
-                  // })
                   .skip(skip)
                   .limit(limit)
                   .toArray();
 
             // Get the total count of jobs matching the search condition (for pagination)
             const totalCount = await jobs_collection.countDocuments(searchCondition);
-
+            console.log(searchQuery);
             // Calculate total pages
             const totalPages = Math.ceil(totalCount / limit);
+
+
+            if (searchQuery.length) {
+                  const existingTerm = await search_history_collection.findOne({ search: searchQuery });
+
+                  if (!existingTerm) {
+                        await search_history_collection.insertOne({ search: searchQuery, timestamp: new Date() });
+                  }
+            }
 
             // Respond with paginated search results
             response_sender({
@@ -329,19 +317,49 @@ const get_workspace_jobs = async (req, res, next) => {
 };
 
 const get_search_suggestions = async (req, res) => {
-      const term = req.body.term;
-      const query = {
-            term: { $regex: term, $options: "i" },
-      };
-      const suggestions = await search_history_collection.find(query).toArray();
-      response_sender({
-            res,
-            status_code: 200,
-            error: false,
-            message: "Suggestions fetched successfully",
-            data: suggestions,
-      })
+      try {
+            const term = req.query.search;
+
+            // MongoDB query with regex for case-insensitive matching
+            const query = {
+                  term: { $regex: search, $options: "i" },
+            };
+
+            // Retrieve suggestions from the collection
+            const suggestions = await search_history_collection
+                  .find(query)
+                  .sort({ timestamp: -1 })
+                  .limit(20) // Fetch more to filter duplicates
+                  .toArray();
+
+            // Remove duplicates by `term`
+            const uniqueSuggestions = [];
+            const termSet = new Set();
+
+            for (const suggestion of suggestions) {
+                  if (!termSet.has(suggestion.search)) {
+                        termSet.add(suggestion.search);
+                        uniqueSuggestions.push(suggestion);
+                  }
+            }
+
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Suggestions fetched successfully",
+                  data: uniqueSuggestions.slice(0, 5), // Limit to top 5 unique results
+            });
+      } catch (error) {
+            response_sender({
+                  res,
+                  status_code: 500,
+                  error: true,
+                  message: "An error occurred while fetching suggestions",
+            });
+      }
 };
+
 
 
 module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs, get_search_suggestions };
