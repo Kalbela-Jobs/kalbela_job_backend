@@ -1,11 +1,9 @@
 const { ObjectId } = require("mongodb");
-const { jobs_collection } = require("../../collection/collections/system");
+const { jobs_collection, search_history_collection } = require("../../collection/collections/system");
 const { response_sender } = require("../hooks/respose_sender");
 
 
 const create_job = async (req, res, next) => {
-
-
       try {
             const newJob = req.body;
             const find_url = await jobs_collection.findOne({ url: newJob.url });
@@ -32,10 +30,8 @@ const create_job = async (req, res, next) => {
 
 const update_job = async (req, res, next) => {
       try {
-            const { job_id } = req.query; // Get job ID from URL params
-            const updates = req.body; // Get fields to update from the request body
-
-            // Validate the job ID
+            const { job_id } = req.query;
+            const updates = req.body;
             if (!job_id) {
                   return res.status(400).json({
                         status_code: 400,
@@ -226,6 +222,10 @@ const get_job_search_result = async (req, res, next) => {
                   ]
             };
 
+            if (searchQuery.length) {
+                  await search_history_collection.insertOne({ term: searchQuery, timestamp: new Date() });
+            }
+
             // Perform the search and apply pagination using skip and limit
             const jobs = await jobs_collection
                   .find(searchCondition)
@@ -328,4 +328,20 @@ const get_workspace_jobs = async (req, res, next) => {
       }
 };
 
-module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs };
+const get_search_suggestions = async (req, res) => {
+      const term = req.body.term;
+      const query = {
+            term: { $regex: term, $options: "i" },
+      };
+      const suggestions = await search_history_collection.find(query).toArray();
+      response_sender({
+            res,
+            status_code: 200,
+            error: false,
+            message: "Suggestions fetched successfully",
+            data: suggestions,
+      })
+};
+
+
+module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs, get_search_suggestions };

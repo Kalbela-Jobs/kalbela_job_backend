@@ -4,6 +4,7 @@ const { user_collection, password_backup } = require("../../../collection/collec
 const { response_sender } = require("../../hooks/respose_sender");
 const generateVerificationEmail = require('../../../mail/template/vericicationmail');
 const { send_email } = require('../../../mail/send_email');
+const { workspace_collection } = require('../../../collection/collections/system');
 
 
 const otpStore = {};
@@ -61,7 +62,6 @@ const create_user = async (req, res, next) => {
                   return;
             }
 
-            // Generate OTP
             const otp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
             const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
             otpStore[data.email] = { otp, expiry: otpExpiry }; // Store OTP and expiry in memory
@@ -285,6 +285,20 @@ const create_new_hr_and_user = async (req, res, next) => {
                   return;
             }
 
+            const find_work_space = await workspace_collection.findOne({ company_id: data.company_id });
+            if (!find_work_space) {
+
+                  response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Invalid company website",
+                  });
+                  return;
+            }
+
+
+
             // Generate OTP
             const otp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
             const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
@@ -320,6 +334,20 @@ const create_new_hr_and_user = async (req, res, next) => {
 
             const created_user = await user_collection.insertOne(user);
 
+            await workspace_collection.updateOne({
+                  _id: new ObjectId(data.company_id)
+            }, {
+                  $set: {
+                        //add new staff
+                        staff: [...find_work_space.staff, {
+
+                              name: data.name,
+                              role: data.role,
+                              _id: created_user.insertedId.toString(),
+                        }]
+                  }
+            })
+
 
             const new_data = {
                   _id: created_user.insertedId.toString(),
@@ -350,4 +378,107 @@ const create_new_hr_and_user = async (req, res, next) => {
       }
 };
 
-module.exports = { create_user, verify_email, regenerate_otp, create_new_hr_and_user };
+const get_workspace_hr = async (req, res, next) => {
+      try {
+            const workspace_id = req.query.workspace_id;
+
+            // role:   "workspace_admin"
+            const workspace = await user_collection.find({
+                  company_id: workspace_id,
+                  role: { $ne: "workspace_admin" }
+            }).toArray();
+
+
+
+            if (!workspace) {
+                  return response_sender({
+                        res,
+                        status_code: 404,
+                        error: true,
+                        message: "Workspace not found",
+                  });
+            }
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Workspace fetched successfully",
+                  data: workspace,
+            });
+      } catch (error) {
+            next(error);
+      }
+};
+
+
+const create_user_as_a_job_sucker = async (req, res, next) => {
+      try {
+            let data = req.body;
+            if (!data) {
+                  throw new Error('User data is required');
+            }
+
+            const password = data.password;
+            if (!password) {
+                  response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Password is required",
+                  });
+                  return;
+            }
+
+            if (password.length < 6) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Password must be at least 6 characters long",
+                  });
+            }
+
+            if (!data.email) {
+                  response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Email is required",
+                  });
+                  return;
+            }
+
+            // Check if the email already exists in the in-memory store
+            if (otpStore[data.email]) {
+                  response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "User already exists or OTP already sent. Please verify your email.",
+                  });
+                  return;
+            }
+
+            const otp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
+            const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
+            otpStore[data.email] = { otp, expiry: otpExpiry }; // Store OTP and expiry in memory
+
+            
+
+
+
+            const created_user = await user_collection.insertOne(user_data);
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "User created successfully",
+                  data: created_user,
+            });
+      } catch (error) {
+            next(error);
+      }
+}
+
+
+module.exports = { create_user, verify_email, regenerate_otp, create_new_hr_and_user, get_workspace_hr };
