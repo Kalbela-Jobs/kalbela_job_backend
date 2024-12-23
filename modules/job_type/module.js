@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { job_type_collection } = require("../../collection/collections/system");
 const { response_sender } = require("../hooks/respose_sender");
 
@@ -37,20 +38,63 @@ const get_all_jobs = async (req, res, next) => {
 
 const update_job_type = async (req, res, next) => {
       try {
-            const job_type_data = req.body;
-            job_type_data.updated_at = new Date();
-            await job_type_collection.updateOne({ _id: new ObjectId(job_type_data._id) }, { $set: job_type_data });
+            const category_data = req.body;
+
+            if (!category_data._id) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Category ID is required",
+                  });
+            }
+
+            const { ...updateFields } = category_data;
+
+            const _id = updateFields._id;
+
+
+            updateFields.updated_at = new Date();
+
+            delete updateFields._id;
+
+            // Ensure there's something to update
+            if (Object.keys(updateFields).length === 0) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "No fields to update",
+                  });
+            }
+
+            // Perform the update
+            const result = await job_type_collection.updateOne(
+                  { _id: new ObjectId(_id) },
+                  { $set: updateFields }
+            );
+
+            if (result.matchedCount === 0) {
+                  return response_sender({
+                        res,
+                        status_code: 404,
+                        error: true,
+                        message: "Category not found",
+                  });
+            }
+
+            // Respond with success
             response_sender({
                   res,
                   status_code: 200,
                   error: false,
-                  message: "Job type updated successfully",
-                  data: job_type_data,
+                  message: "Category updated successfully",
+                  data: { _id, ...updateFields },
             });
       } catch (error) {
-            next(error);
+            next(error); // Pass the error to the global error handler
       }
-}
+};
 
 const delete_job_type = async (req, res, next) => {
       try {

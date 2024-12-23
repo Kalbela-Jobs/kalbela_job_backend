@@ -8,6 +8,9 @@ const job_router = require('../modules/jobs/job_route'); // Adjust the path if n
 const workspace_router = require('../modules/organization/org_router'); // Adjust the path if necessary
 const category_router = require('../modules/category/category_router'); // Adjust the path if necessary
 const job_type_router = require('../modules/job_type/job_type_router'); // Adjust the path if necessary
+const ai_router = require('../modules/AI/ai_router'); // Adjust the path if necessary
+const user_router = require('../modules/users/user_router');
+const resource_router = require('../modules/resource/resource_router')
 
 // Define module routes
 const modulesRoutes = [
@@ -42,6 +45,18 @@ const modulesRoutes = [
       {
             path: '/job-type',
             route: job_type_router,
+      },
+      {
+            path: '/ai',
+            route: ai_router,
+      },
+      {
+            path: '/resource',
+            route: resource_router
+      },
+      {
+            path: '/user',
+            route: user_router
       }
 ];
 
