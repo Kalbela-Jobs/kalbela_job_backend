@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { jobs_collection } = require("../../collection/collections/system");
 const { response_sender } = require("../hooks/respose_sender");
 
@@ -6,70 +7,22 @@ const create_job = async (req, res, next) => {
 
 
       try {
-            const {
-                  title,
-                  description,
-                  requirements,
-                  company_id,
-                  category_id,
-                  subcategory_id,
-                  salary_range,
-                  negotiable,
-                  job_type,
-                  negotiation_notes,
-                  employment_type,
-                  location,
-                  postedBy,
-                  company_size,
-                  currency,
-                  tags,
-                  benefits,
-                  experience_level,
-            } = req.body;
-
-            // Validate required fields (optional, can be customized as needed)
-            if (!title || !description || !company_id || !category_id || !location) {
-                  return res.status(400).json({
-                        status_code: 400,
-                        error: true,
-                        message: "Required fields are missing",
-                  });
+            const newJob = req.body;
+            const find_url = await jobs_collection.findOne({ url: newJob.url });
+            if (find_url) {
+                  newJob.url = `${newJob.url}-${Date.now()}} `
             }
-
-            // Create the new job object
-            const newJob = {
-                  title,
-                  description,
-                  requirements,
-                  company_id,
-                  category_id,
-                  subcategory_id,
-                  salary_range,
-                  negotiable,
-                  job_type,
-                  negotiation_notes,
-                  employment_type,
-                  location,
-                  postedBy,
-                  created_at: new Date(),
-                  updated_at: new Date(),
-                  company_size,
-                  currency,
-                  tags,
-                  benefits,
-                  experience_level,
-                  status: true,  // Default to active
-            };
-
-            // Insert the new job into the database
+            newJob.created_at = new Date();
+            newJob.updated_at = new Date();
+            newJob.status = true;
+            newJob.applications_count = 0;
+            newJob.feature_status = false;
             const result = await jobs_collection.insertOne(newJob);
-
-            // Respond with the created job data
             res.status(201).json({
                   status_code: 201,
                   error: false,
                   message: "Job created successfully",
-                  data: result.ops[0],  // Return the inserted job object
+                  data: result,  // Return the inserted job object
             });
       } catch (err) {
             next(err);
@@ -79,7 +32,7 @@ const create_job = async (req, res, next) => {
 
 const update_job = async (req, res, next) => {
       try {
-            const { job_id } = req.params; // Get job ID from URL params
+            const { job_id } = req.query; // Get job ID from URL params
             const updates = req.body; // Get fields to update from the request body
 
             // Validate the job ID
@@ -142,6 +95,17 @@ const get_all_jobs = async (req, res, next) => {
 
             // Fetch jobs with pagination
             const jobs = await jobs_collection.find({})
+                  //       .project({
+                  //       job_title: 1,
+                  //       _id: 1,
+                  //       vacancy: 1,
+                  //       expiry_date: 1,
+                  //       job_type: 1,
+                  //       salary_range: 1,
+                  //       company_info: 1,
+                  //       url: 1,
+                  //       location: 1,
+                  // })
                   .skip(skip)
                   .limit(limit)
                   .toArray();
@@ -265,6 +229,16 @@ const get_job_search_result = async (req, res, next) => {
             // Perform the search and apply pagination using skip and limit
             const jobs = await jobs_collection
                   .find(searchCondition)
+                  // .project({
+                  //       job_title: 1,
+                  //       _id: 1,
+                  //       vacancy: 1,
+                  //       expiry_date: 1,
+                  //       job_type: 1,
+                  //       salary_range: 1,
+                  //       company_info: 1,
+                  //       url: 1,
+                  // })
                   .skip(skip)
                   .limit(limit)
                   .toArray();
@@ -299,8 +273,9 @@ const get_job_search_result = async (req, res, next) => {
 
 const delete_job = async (req, res, next) => {
       try {
-            const { job_id } = req.params;
-            const result = await jobs_collection.deleteOne({ _id: job_id });
+            const { job_id } = req.query;
+            console.log(job_id);
+            const result = await jobs_collection.deleteOne({ _id: new ObjectId(job_id) });
             if (result.deletedCount === 0) {
                   return res.status(404).json({
                         status_code: 404,
@@ -318,6 +293,39 @@ const delete_job = async (req, res, next) => {
       }
 };
 
+const get_workspace_jobs = async (req, res, next) => {
+      try {
+            const { workspace_id } = req.query;
+            const page = parseInt(req.query.page) || 1; // Get the current page from query, default to 1
+            const limit = parseInt(req.query.limit) || 10; // Get the limit per page from query, default to 10
+            const skip = (page - 1) * limit; // Calculate the number of items to skip for pagination
+            const jobs = await jobs_collection.find({
+                  "company_info.company_id": workspace_id
+            })
+                  //       .project({
+                  //       job_title: 1,
+                  //       _id: 1,
+                  //       vacancy: 1,
+                  //       expiry_date: 1,
+                  //       job_type: 1,
+                  //       salary_range: 1,
+                  //       company_info: 1,
+                  //       url: 1,
+                  // })
+                  .skip(skip)
+                  .limit(limit)
+                  .toArray();
 
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Jobs fetched successfully",
+                  data: jobs,
+            });
+      } catch (err) {
+            next(err);
+      }
+};
 
-module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job };
+module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs };

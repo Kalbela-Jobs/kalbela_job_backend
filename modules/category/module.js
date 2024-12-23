@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { category_collection } = require("../../collection/collections/system");
 const { response_sender } = require("../hooks/respose_sender");
 
@@ -40,23 +41,67 @@ const create_category = async (req, res, next) => {
 const update_category = async (req, res, next) => {
       try {
             const category_data = req.body;
-            category_data.updated_at = new Date();
-            await category_collection.updateOne({ _id: new ObjectId(category_data._id) }, { $set: category_data });
+
+            if (!category_data._id) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Category ID is required",
+                  });
+            }
+
+            const { ...updateFields } = category_data;
+
+            const _id = updateFields._id;
+
+
+            updateFields.updated_at = new Date();
+
+            delete updateFields._id;
+
+            // Ensure there's something to update
+            if (Object.keys(updateFields).length === 0) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "No fields to update",
+                  });
+            }
+
+            // Perform the update
+            const result = await category_collection.updateOne(
+                  { _id: new ObjectId(_id) },
+                  { $set: updateFields }
+            );
+
+            if (result.matchedCount === 0) {
+                  return response_sender({
+                        res,
+                        status_code: 404,
+                        error: true,
+                        message: "Category not found",
+                  });
+            }
+
+            // Respond with success
             response_sender({
                   res,
                   status_code: 200,
                   error: false,
                   message: "Category updated successfully",
-                  data: category_data,
+                  data: { _id, ...updateFields },
             });
       } catch (error) {
-            next(error);
+            next(error); // Pass the error to the global error handler
       }
-}
+};
+
 
 const delete_category = async (req, res, next) => {
       try {
-            const { category_id } = req.params;
+            const { category_id } = req.query;
             await category_collection.deleteOne({ _id: new ObjectId(category_id) });
             response_sender({
                   res,

@@ -94,5 +94,27 @@ const get_workspace = async (req, res, next) => {
       }
 }
 
+const update_workspace = async (req, res, next) => {
+      try {
+            const data = req.body
+            const workspace_id = req.query.workspace_id
+            const query = { _id: new ObjectId(workspace_id) }
+            await workspace_collection.updateOne(query, {
+                  $set: { ...data }
+            })
+            const workspace = await workspace_collection.findOne(query)
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Workspace update successful",
+                  data: workspace,
+            })
+      } catch (error) {
+            next(error)
+      }
 
-module.exports = { create_a_workspace, get_workspace, get_all_workspaces };
+}
+
+
+module.exports = { create_a_workspace, get_workspace, get_all_workspaces, update_workspace };

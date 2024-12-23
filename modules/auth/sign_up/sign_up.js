@@ -2,8 +2,8 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { user_collection, password_backup } = require("../../../collection/collections/auth");
 const { response_sender } = require("../../hooks/respose_sender");
-const send_email = require('../../../mail/send_email');
 const generateVerificationEmail = require('../../../mail/template/vericicationmail');
+const { send_email } = require('../../../mail/send_email');
 
 
 const otpStore = {};
@@ -108,13 +108,12 @@ const create_user = async (req, res, next) => {
 
             // Send email with OTP
             send_email({
-                  email: data.email,
+                  email: [data.email],
                   subject: "Email Verification",
                   html: generateVerificationEmail({
                         email: data.email,
                         verification_code: otp, // Include OTP in the email template
                   }),
-                  text: `Your email verification code is: ${otp}`,
             });
 
             response_sender({
@@ -213,17 +212,16 @@ const regenerate_otp = async (req, res, next) => {
             const newOtp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
             const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
             otpStore[email] = { otp: newOtp, expiry: otpExpiry }; // Update OTP in memory
-            console.log(otpStore, 'otpStore');
+            console.log(email, 'otpStore');
 
             // Send email with new OTP
             send_email({
-                  email: email,
+                  to: [email],
                   subject: "New Email Verification Code",
-                  html: generateVerificationEmail({
+                  htmlBody: generateVerificationEmail({
                         email: email,
                         verification_code: newOtp, // Include the new OTP in the email template
                   }),
-                  text: `Your new email verification code is: ${newOtp}`,
             });
 
             response_sender({
@@ -238,4 +236,118 @@ const regenerate_otp = async (req, res, next) => {
 };
 
 
-module.exports = { create_user, verify_email, regenerate_otp };
+const create_new_hr_and_user = async (req, res, next) => {
+      try {
+            let data = req.body;
+            if (!data) {
+                  throw new Error('User data is required');
+            }
+
+            // Ensure password exists in the data
+            const password = data.password;
+            if (!password) {
+                  response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Password is required",
+                  });
+                  return;
+            }
+
+            if (password.length < 6) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Password must be at least 6 characters long",
+                  });
+            }
+
+            if (!data.email) {
+                  response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Email is required",
+                  });
+                  return;
+            }
+
+            // Check if the email already exists in the in-memory store
+            if (otpStore[data.email]) {
+                  response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "User already exists or OTP already sent. Please verify your email.",
+                  });
+                  return;
+            }
+
+            // Generate OTP
+            const otp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
+            const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
+            otpStore[data.email] = { otp, expiry: otpExpiry }; // Store OTP and expiry in memory
+
+            console.log(otpStore, 'otpStore');
+
+            const user_data = {
+                  email: data.email,
+                  password: password,
+            }
+            // Hash the password
+            await password_backup.insertOne(user_data);
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            const user = {
+                  ...data,
+                  password: hashedPassword, // Store the hashed password instead of the plain one
+                  address: '',
+                  gender: '',
+                  date_of_birth: '',
+                  preferences: {
+                        job_alerts: true,
+                        news_letter: true,
+                  },
+                  company_status: true,
+                  social_links: {},
+                  is_active: false,
+                  email_verify: false,
+                  created_at: new Date(),
+                  updated_at: new Date(),
+            };
+
+            const created_user = await user_collection.insertOne(user);
+
+
+            const new_data = {
+                  _id: created_user.insertedId.toString(),
+                  ...user,
+            }
+            delete new_data.password
+
+            // Send email with OTP
+            send_email({
+                  email: [data.email],
+                  subject: "Email Verification",
+                  html: generateVerificationEmail({
+                        email: data.email,
+                        verification_code: otp, // Include OTP in the email template
+                        verifyLink: `http://localhost:3000/verify_otp`,
+                  }),
+            });
+
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "OTP sent to your email. Please verify.",
+                  data: new_data,
+            });
+      } catch (error) {
+            next(error);
+      }
+};
+
+module.exports = { create_user, verify_email, regenerate_otp, create_new_hr_and_user };
