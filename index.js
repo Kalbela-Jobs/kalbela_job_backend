@@ -9,14 +9,14 @@ const path = require("path");
 const app = express();
 const port = process.env.PORT || 5005;
 
-app.use(cors({
-      origin: 'http://localhost:5173',
-      credentials: true,
-}));
+// app.use(cors({
+//       origin: 'http://localhost:5173',
+//       credentials: true,
+// }));
 
 
 
-// CORS configuration
+
 const corsOptions = {
       origin:
             process.env.NODE_ENV === 'development'
@@ -25,6 +25,8 @@ const corsOptions = {
                         'http://localhost:5173',
                         'http://127.0.0.1:3000',
                         'http://192.168.0.101:3000',
+                        'https://app.kalbelajobs.com',
+                        'https://kalbelajobs.com',
                   ]
                   : ['https://kalbela-jobs-backend.vercel.app'],
       credentials: true,

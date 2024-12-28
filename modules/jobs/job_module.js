@@ -350,5 +350,19 @@ const get_search_suggestions = async (req, res) => {
 };
 
 
+const get_job_info_by_id = async (req, res, next) => {
+      const id = req.query.id
+      const find_job = await jobs_collection.findOne({ _id: new ObjectId(id) })
+      if (find_job) {
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Jobs fetched successfully",
+                  data: find_job
+            })
+      }
+}
 
-module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs, get_search_suggestions };
+
+module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs, get_search_suggestions, get_job_info_by_id };

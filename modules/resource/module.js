@@ -186,6 +186,24 @@ const get_resource_category = async (req, res, next) => {
       }
 };
 
+const get_resource_by_category = async (req, res, next) => {
+      try {
+            const { slag } = req.query;
+            const resources = await resource_collection.find({
+                  slag: slag
+            }).toArray();
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Fetched resources successfully",
+                  data: resources,
+            });
+      } catch (error) {
+            next(error);
+      }
+};
 
 
-module.exports = { create_resource, get_resource, get_single, get_search, update_resource, delete_resource, get_resource_category };
+
+module.exports = { create_resource, get_resource, get_single, get_search, update_resource, delete_resource, get_resource_category, get_resource_by_category };
