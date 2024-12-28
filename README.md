@@ -85,9 +85,9 @@ This project is licensed under the [BFS](https://www.brightfuturesoft.com/) Lice
 If you update the collections in the backend, use the following command to sync them to the server:
 
 ```bash
-scp -r collection root@167.71.217.33:/var/www/kalbela-jobs-backend
+scp -r collection munna@120.50.6.15:/var/www/kalbela_jobs_backend
 ```
 
-**Password**: `mAhadi624234a`
+**Password**: `boss2024`
 
 ---

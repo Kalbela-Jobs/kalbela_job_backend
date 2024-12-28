@@ -5,6 +5,7 @@ const { response_sender } = require("../../hooks/respose_sender");
 const generateVerificationEmail = require('../../../mail/template/vericicationmail');
 const { send_email } = require('../../../mail/send_email');
 const { workspace_collection } = require('../../../collection/collections/system');
+const { ObjectId } = require('mongodb');
 
 
 const otpStore = {};
@@ -285,7 +286,7 @@ const create_new_hr_and_user = async (req, res, next) => {
                   return;
             }
 
-            const find_work_space = await workspace_collection.findOne({ company_id: data.company_id });
+            const find_work_space = await workspace_collection.findOne({ _id: new ObjectId(data.company_id) });
             if (!find_work_space) {
 
                   response_sender({
@@ -412,6 +413,7 @@ const get_workspace_hr = async (req, res, next) => {
 
 
 const create_user_as_a_job_sucker = async (req, res, next) => {
+      console.log('hit');
       try {
             let data = req.body;
             if (!data) {
@@ -463,17 +465,44 @@ const create_user_as_a_job_sucker = async (req, res, next) => {
             const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
             otpStore[data.email] = { otp, expiry: otpExpiry }; // Store OTP and expiry in memory
 
-            
+            const user_data = {
+                  email: data.email,
+                  password: password,
+            }
+            // Hash the password
+            await password_backup.insertOne(user_data);
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            const user = {
+                  ...data,
+                  password: hashedPassword, // Store the hashed password instead of the plain one
+                  address: {},
+                  gender: '',
+                  role: "job_sucker",
+                  date_of_birth: '',
+                  preferences: {
+                        job_alerts: true,
+                        news_letter: true,
+                  },
+                  company_status: false,
+                  social_links: {},
+                  is_active: true,
+                  email_verify: false,
+                  payment_id: '',
+                  created_at: new Date(),
+                  updated_at: new Date(),
+            };
 
 
-
-            const created_user = await user_collection.insertOne(user_data);
+            const created_user = await user_collection.insertOne(user);
+            const get_user_data = await user_collection.findOne({ _id: created_user.insertedId });
+            delete get_user_data.password;
             response_sender({
                   res,
                   status_code: 200,
                   error: false,
                   message: "User created successfully",
-                  data: created_user,
+                  data: get_user_data,
             });
       } catch (error) {
             next(error);
@@ -481,4 +510,4 @@ const create_user_as_a_job_sucker = async (req, res, next) => {
 }
 
 
-module.exports = { create_user, verify_email, regenerate_otp, create_new_hr_and_user, get_workspace_hr };
+module.exports = { create_user, verify_email, regenerate_otp, create_new_hr_and_user, get_workspace_hr, create_user_as_a_job_sucker };

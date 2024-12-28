@@ -1,5 +1,5 @@
 const express = require('express');
-const { create_resource, get_resource, get_search, get_single, update_resource, delete_resource, get_resource_category } = require('./module');
+const { create_resource, get_resource, get_search, get_single, update_resource, delete_resource, get_resource_category, get_resource_by_category } = require('./module');
 const router = express.Router();
 
 router.post('/create', create_resource);
@@ -10,6 +10,7 @@ router.put("/update", update_resource);
 router.delete("/delete", delete_resource);
 
 router.get('/category', get_resource_category)
+router.get('/category-resource', get_resource_by_category)
 
 
 module.exports = router;
