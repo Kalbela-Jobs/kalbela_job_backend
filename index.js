@@ -21,6 +21,10 @@ const corsOptions = {
       origin:
             process.env.NODE_ENV === 'development'
                   ? [
+                        'https://kalbela-jobs-backend.vercel.app',
+                        'https://app.kalbelajobs.com',
+                        'https://kalbelajobs.com',
+                        " https://www.kalbelajobs.com",
                         'http://localhost:3000',
                         'http://localhost:5173',
                         'http://127.0.0.1:3000',
