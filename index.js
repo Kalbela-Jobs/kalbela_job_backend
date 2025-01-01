@@ -28,7 +28,18 @@ const corsOptions = {
                         'https://app.kalbelajobs.com',
                         'https://kalbelajobs.com',
                   ]
-                  : ['https://kalbela-jobs-backend.vercel.app'],
+                  : [
+                        'https://kalbela-jobs-backend.vercel.app',
+                        'https://app.kalbelajobs.com',
+                        'https://kalbelajobs.com',
+                        " https://www.kalbelajobs.com",
+                        'http://localhost:3000',
+                        'http://localhost:5173',
+                        'http://127.0.0.1:3000',
+                        'http://192.168.0.101:3000',
+                        'https://app.kalbelajobs.com',
+                        'https://kalbelajobs.com',
+                  ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
 };
