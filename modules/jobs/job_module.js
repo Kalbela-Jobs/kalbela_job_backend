@@ -351,8 +351,8 @@ const get_search_suggestions = async (req, res) => {
 
 
 const get_job_info_by_id = async (req, res, next) => {
-      const id = req.query.id
-      const find_job = await jobs_collection.findOne({ _id: new ObjectId(id) })
+      const url = req.query.url
+      const find_job = await jobs_collection.findOne({ url })
       if (find_job) {
             response_sender({
                   res,
