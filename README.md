@@ -14,32 +14,35 @@ Welcome to Kalbela Jobs Backend! This project serves as the backend for the Kalb
 ```
 kalbela_job_backend/
 │
-├── package.json        # Project metadata and dependencies
-├── index.js            # Entry point of the application
-├── index.html          # Frontend HTML file (if applicable)
+├── package.json
+├── index.js
+├── index.html
 │
-├── modules/            # Contains modules for different roles
-│   ├── admin/          # Admin module
-│   │   ├── router/     # Router for admin module
-│   │   └── modules/    # Sub-modules specific to admin
+├── modules/
+│   ├── admin/
+│   │   ├── router/
+│   │   └── modules/
 │   │
-│   ├── employer/       # Employer module
-│   │   ├── router/     # Router for employer module
-│   │   └── modules/    # Sub-modules specific to employer
+│   ├── employer/
+│   │   ├── router/
+│   │   └── modules/
 │   │
-│   ├── jobseeker/      # Jobseeker module
-│   │   ├── router/     # Router for jobseeker module
-│   │   └── modules/    # Sub-modules specific to jobseeker
+│   ├── jobseeker/
+│   │   ├── router/
+│   │   └── modules/
 │   │
-│   └── user/           # User module
-│       ├── router/     # Router for user module
-│       └── modules/    # Sub-modules specific to user
+│   └── user/
+│       ├── router/
+│       └── modules/
 │
-└── collection/         # Collection data for different roles
-    ├── admin/          # Admin collection data
-    ├── employer/       # Employer collection data
-    ├── jobseeker/      # Jobseeker collection data
-    └── user/           # User collection data
+└── collection/
+    └── uri.js
+    └── collection/
+        ├── auth.js
+        ├── content.js
+        ├── image_collection.js
+        ├── system.js
+        └── users_activity.js
 ```
 
 ## Setup Instructions
@@ -85,7 +88,16 @@ This project is licensed under the [BFS](https://www.brightfuturesoft.com/) Lice
 If you update the collections in the backend, use the following command to sync them to the server:
 
 ```bash
-scp -r collection munna@120.50.6.15:/var/www/kalbela_jobs_backend
+scp -r collection munna@120.50.6.154:/var/www/kalbela_job_backend
+```
+
+
+```bash
+scp -r modules munna@120.50.6.154:/var/www/kalbela_job_backend
+```
+
+```bash
+scp -r routers munna@120.50.6.154:/var/www/kalbela_job_backend
 ```
 
 **Password**: `boss2024`
