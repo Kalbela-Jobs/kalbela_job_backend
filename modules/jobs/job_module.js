@@ -136,7 +136,7 @@ const get_all_jobs = async (req, res, next) => {
 const get_job_search_result = async (req, res, next) => {
       console.log("get_job_search_result", req.query);
       try {
-            const searchQuery = req?.query?.search?.toLowerCase() || "";
+            const searchQuery = req?.query?.search?.toLowerCase() || "a";
             const category = req?.query?.category
             const location = req?.query?.location
             const job_type = req?.query?.job_type
@@ -151,8 +151,8 @@ const get_job_search_result = async (req, res, next) => {
 
 
             if (category?.length) {
-                  console.log('hit');
-                  searchCondition.$or.push({ category: { $regex: category, $options: "i" } });
+                  const get_category_id = await category_collection.findOne({ slag: category })
+                  searchCondition.$or.push({ category: { $regex: get_category_id?._id.toString(), $options: "i" } });
             }
             if (location?.length) {
                   console.log('hit1');
