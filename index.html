@@ -491,7 +491,167 @@
                                           message: "Workspace fetched successfully"
                                     }
                               }]
-                  }
+                  },
+                  JobSearch: {
+                        items: [
+                              {
+                                    key: '21',
+                                    name: 'Search Jobs',
+                                    icon: 'briefcase',
+                                    endpoint: '/api/v1/jobs?search=:search &category=:category&location=:location&job_type=:job_type&salary_range=:salary_range&page=:page&limit=:limit',
+                                    method: 'GET',
+                                    description: 'Fetch jobs based on search filters.',
+                                    parameters: [
+                                          { name: 'search', type: 'String', required: 'No', description: 'Search term (e.g., job title, skills).' },
+                                          { name: 'category', type: 'String', required: 'No', description: 'Job category.' },
+                                          { name: 'location', type: 'String', required: 'No', description: 'Job location (city, state, or country).' },
+                                          { name: 'job_type', type: 'String', required: 'No', description: 'Type of job (e.g., full-time, part-time).' },
+                                          { name: 'salary_range', type: 'String', required: 'No', description: 'Expected salary range.' },
+                                          { name: 'page', type: 'Number', required: 'No', description: 'Page number for pagination.' },
+                                          { name: 'limit', type: 'Number', required: 'No', description: 'Number of jobs per page.' },
+                                    ],
+                                    response: {
+                                          status_code: 200,
+                                          error: false,
+                                          data: {
+                                                jobs: [
+                                                      {
+                                                            _id: '64f801a9b9d01126b8af445a',
+                                                            title: 'Software Engineer',
+                                                            description: 'Develop and maintain web applications.',
+                                                            category: 'IT',
+                                                            location: {
+                                                                  city: 'Dhaka',
+                                                                  state: 'Dhaka Division',
+                                                                  country: 'Bangladesh',
+                                                            },
+                                                            job_type: 'Full-Time',
+                                                            salary_range: {
+                                                                  min: '50000',
+                                                                  max: '80000',
+                                                                  currency: 'BDT',
+                                                            },
+                                                            company: {
+                                                                  name: 'Bright Future Soft',
+                                                                  website: 'brightfuturesoft.com',
+                                                                  logo: 'https://example.com/company-logo.png',
+                                                            },
+                                                            created_at: '2024-12-16T23:04:13.420Z',
+                                                            updated_at: '2024-12-16T23:04:13.420Z',
+                                                      },
+                                                ],
+                                                pagination: {
+                                                      page: 1,
+                                                      limit: 10,
+                                                      totalPages: 5,
+                                                      totalCount: 50,
+                                                },
+                                          },
+                                          message: 'Jobs fetched successfully.',
+                                    },
+                              },
+                              {
+                                    key: '22',
+                                    name: 'Get Job Details',
+                                    icon: 'briefcase-check',
+                                    endpoint: '/api/v1/jobs/get-by-id?',
+                                    method: 'GET',
+                                    description: 'Fetch detailed information for a specific job.',
+                                    parameters: [
+                                          { name: 'id', type: 'String', required: 'Yes', description: 'Job ID as a route parameter.' },
+                                    ],
+                                    response: {
+                                          status_code: 200,
+                                          error: false,
+                                          data: {
+                                                _id: '64f801a9b9d01126b8af445a',
+                                                title: 'Software Engineer',
+                                                description: 'Develop and maintain web applications.',
+                                                category: 'IT',
+                                                location: {
+                                                      city: 'Dhaka',
+                                                      state: 'Dhaka Division',
+                                                      country: 'Bangladesh',
+                                                },
+                                                job_type: 'Full-Time',
+                                                salary_range: {
+                                                      min: '50000',
+                                                      max: '80000',
+                                                      currency: 'BDT',
+                                                },
+                                                requirements: ['3+ years of experience in JavaScript', 'Experience with React and Node.js'],
+                                                skills: ['JavaScript', 'React', 'Node.js'],
+                                                benefits: ['Health Insurance', 'Performance Bonus'],
+                                                company: {
+                                                      name: 'Bright Future Soft',
+                                                      website: 'brightfuturesoft.com',
+                                                      logo: 'https://example.com/company-logo.png',
+                                                      size: '51-100',
+                                                      industry: 'IT Services',
+                                                },
+                                                created_at: '2024-12-16T23:04:13.420Z',
+                                                updated_at: '2024-12-16T23:04:13.420Z',
+                                          },
+                                          message: 'Job details fetched successfully.',
+                                    },
+                              },
+                              {
+                                    "key": "23",
+                                    "name": "Get Organization Jobs",
+                                    "icon": "briefcase",
+                                    "endpoint": "/api/v1/organization-jobs?org_id=:org_id",
+                                    "method": "GET",
+                                    "description": "Fetch jobs posted by a specific organization, along with company information.",
+                                    "parameters": [
+                                          {
+                                                "name": "org_id",
+                                                "type": "String",
+                                                "required": "Yes",
+                                                "description": "Organization ID (company website or identifier)."
+                                          }
+                                    ],
+                                    "response": {
+                                          "status_code": 200,
+                                          "error": false,
+                                          "data": {
+                                                "jobs": [
+                                                      {
+                                                            "_id": "64f801a9b9d01126b8af445a",
+                                                            "job_title": "Software Engineer",
+                                                            "salary_range": {
+                                                                  "min": "50000",
+                                                                  "max": "80000",
+                                                                  "currency": "BDT"
+                                                            },
+                                                            "job_type": "Full-Time",
+                                                            "experience_level": "Mid-Level",
+                                                            "location": {
+                                                                  "city": "Dhaka",
+                                                                  "state": "Dhaka Division",
+                                                                  "country": "Bangladesh"
+                                                            },
+                                                            "expiry_date": "2024-12-31T23:59:59.000Z",
+                                                            "company_info": {
+                                                                  "name": "Bright Future Soft",
+                                                                  "logo": "https://example.com/company-logo.png",
+                                                                  "website": "brightfuturesoft.com"
+                                                            },
+                                                            "url": "https://brightfuturesoft.com/jobs/software-engineer"
+                                                      }
+                                                ],
+                                                "company_info": {
+                                                      "name": "Bright Future Soft",
+                                                      "logo": "https://example.com/company-logo.png",
+                                                      "website": "brightfuturesoft.com",
+                                                      "industry": "IT Services"
+                                                }
+                                          },
+                                          "message": "Jobs fetched successfully."
+                                    }
+                              },
+                        ],
+                  },
+
             };
 
             function App() {
