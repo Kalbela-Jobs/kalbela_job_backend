@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const { jobs_collection, search_history_collection } = require("../../collection/collections/system");
+const { jobs_collection, search_history_collection, workspace_collection } = require("../../collection/collections/system");
 const { response_sender } = require("../hooks/respose_sender");
 
 
@@ -90,7 +90,22 @@ const get_all_jobs = async (req, res, next) => {
             const skip = (page - 1) * limit;
 
 
-            const jobs = await jobs_collection.find({})
+            const jobs = await jobs_collection.find({},
+                  {
+                        projection: {
+                              job_title: 1,
+                              salary_range: 1,
+                              job_type: 1,
+                              experience_level: 1,
+                              location: 1,
+                              expiry_date: 1,
+                              company_info: {
+                                    name: 1,
+                                    logo: 1,
+                              },
+                              url: 1,
+                        },
+                  })
                   .skip(skip)
                   .limit(limit)
                   .toArray();
@@ -121,7 +136,7 @@ const get_all_jobs = async (req, res, next) => {
 const get_job_search_result = async (req, res, next) => {
       console.log("get_job_search_result", req.query);
       try {
-            const searchQuery = req.query.search || "";
+            const searchQuery = req.query.search.toLowerCase() || "";
             const category = req.query.category
             const location = req.query.location
             const job_type = req.query.job_type
@@ -155,30 +170,48 @@ const get_job_search_result = async (req, res, next) => {
             }
 
             else if (searchQuery.length) {
-                  console.log('hit4');
-                  searchCondition.$or.push({ title: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ _id: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ job_type: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ category: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ description: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ requirements: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ skills: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ tags: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ benefits: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ company_size: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ experience_level: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ location: { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ "location.city": { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ "location.state": { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ "location.country": { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ "salary_range.min": { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ "salary_range.max": { $regex: searchQuery, $options: "i" } });
-                  searchCondition.$or.push({ "salary_range.currency": { $regex: searchQuery, $options: "i" } });
+                  const searchWords = searchQuery.split(" "); // Split the query by spaces
+                  searchWords.forEach((word) => {
+                        const wordRegex = { $regex: word, $options: "i" }; // Create regex for each word
+                        searchCondition.$or.push({ title: wordRegex });
+                        searchCondition.$or.push({ url: wordRegex });
+                        searchCondition.$or.push({ _id: wordRegex });
+                        searchCondition.$or.push({ job_type: wordRegex });
+                        searchCondition.$or.push({ category: wordRegex });
+                        searchCondition.$or.push({ description: wordRegex });
+                        searchCondition.$or.push({ requirements: wordRegex });
+                        searchCondition.$or.push({ skills: wordRegex });
+                        searchCondition.$or.push({ tags: wordRegex });
+                        searchCondition.$or.push({ benefits: wordRegex });
+                        searchCondition.$or.push({ company_size: wordRegex });
+                        searchCondition.$or.push({ experience_level: wordRegex });
+                        searchCondition.$or.push({ location: wordRegex });
+                        searchCondition.$or.push({ "location.city": wordRegex });
+                        searchCondition.$or.push({ "location.state": wordRegex });
+                        searchCondition.$or.push({ "location.country": wordRegex });
+                        searchCondition.$or.push({ "salary_range.min": wordRegex });
+                        searchCondition.$or.push({ "salary_range.max": wordRegex });
+                        searchCondition.$or.push({ "salary_range.currency": wordRegex });
+                  });
             }
 
 
             const jobs = await jobs_collection
-                  .find(searchCondition)
+                  .find(searchCondition, {
+                        projection: {
+                              job_title: 1,
+                              salary_range: 1,
+                              job_type: 1,
+                              experience_level: 1,
+                              location: 1,
+                              expiry_date: 1,
+                              company_info: {
+                                    name: 1,
+                                    logo: 1,
+                              },
+                              url: 1,
+                        },
+                  })
                   .skip(skip)
                   .limit(limit)
                   .toArray();
@@ -322,5 +355,47 @@ const get_job_info_by_id = async (req, res, next) => {
       }
 }
 
+const org_all_jobs_with_info = async (req, res, next) => {
+      try {
+            const company_website = req.query.org_id
+            const company_info = await workspace_collection.findOne({ company_website: company_website });
+            delete company_info.package
+            delete company_info.staff
+            delete company_info.priority
+            delete company_info.status
+            delete company_info.priority
+            const jobs = await jobs_collection
+                  .find(
+                        { "company_info.company_id": company_info._id.toString() },
+                        {
+                              projection: {
+                                    job_title: 1,
+                                    salary_range: 1,
+                                    job_type: 1,
+                                    experience_level: 1,
+                                    location: 1,
+                                    expiry_date: 1,
+                                    company_info: {
+                                          name: 1,
+                                          logo: 1,
+                                    },
+                                    url: 1,
+                              },
+                        }
+                  )
+                  .toArray();
 
-module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs, get_search_suggestions, get_job_info_by_id };
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Jobs fetched successfully",
+                  data: { jobs, company_info }
+            });
+
+      } catch (error) {
+            next(error);
+      }
+}
+
+module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs, get_search_suggestions, get_job_info_by_id, org_all_jobs_with_info };
