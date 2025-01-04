@@ -136,14 +136,14 @@ const get_all_jobs = async (req, res, next) => {
 const get_job_search_result = async (req, res, next) => {
       console.log("get_job_search_result", req.query);
       try {
-            const searchQuery = req.query.search.toLowerCase() || "";
-            const category = req.query.category
-            const location = req.query.location
-            const job_type = req.query.job_type
-            const salary_range = req.query.salary_range
+            const searchQuery = req?.query?.search?.toLowerCase() || "";
+            const category = req?.query?.category
+            const location = req?.query?.location
+            const job_type = req?.query?.job_type
+            const salary_range = req?.query?.salary_range
 
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req?.query?.page) || 1;
+            const limit = parseInt(req?.query?.limit) || 10;
             const skip = (page - 1) * limit;
 
             const searchCondition = { $or: [] };
