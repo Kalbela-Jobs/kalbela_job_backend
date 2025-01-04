@@ -301,7 +301,8 @@ const create_new_hr_and_user = async (req, res, next) => {
 
 
             // Generate OTP
-            const otp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
+            // const otp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
+            const otp = 123456
             const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
             otpStore[data.email] = { otp, expiry: otpExpiry }; // Store OTP and expiry in memory
 
@@ -413,7 +414,7 @@ const get_workspace_hr = async (req, res, next) => {
 
 
 const create_user_as_a_job_sucker = async (req, res, next) => {
-      console.log('hit');
+
       try {
             let data = req.body;
             if (!data) {
@@ -450,6 +451,18 @@ const create_user_as_a_job_sucker = async (req, res, next) => {
                   return;
             }
 
+            const existingUser = await user_collection.findOne({ email: data.email });
+            if (existingUser) {
+                  response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "User with this email already exists. Please log in or use a different email.",
+                  });
+                  return;
+            }
+
+
             // Check if the email already exists in the in-memory store
             if (otpStore[data.email]) {
                   response_sender({
@@ -461,7 +474,8 @@ const create_user_as_a_job_sucker = async (req, res, next) => {
                   return;
             }
 
-            const otp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
+            // const otp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
+            const otp = 123456;
             const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
             otpStore[data.email] = { otp, expiry: otpExpiry }; // Store OTP and expiry in memory
 

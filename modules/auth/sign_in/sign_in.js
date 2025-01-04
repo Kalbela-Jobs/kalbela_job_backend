@@ -71,26 +71,59 @@ const sign_in = async (req, res, next) => {
 };
 
 
-const sign_out = async (req, res, next) => {
-
-
-
+const sign_in_user = async (req, res, next) => {
       try {
-            res.clearCookie('erp_user');
-            res.clearCookie('erp_workspace');
+            const { email, password } = req.body;
+            console.log(req.body);
+            if (!email || !password) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        data: null,
+                        message: "Email and password are required.",
+                  });
+            }
+
+            const find_user = await user_collection.findOne({ email });
+
+            if (!find_user) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        data: null,
+                        message: "Email is not registered.",
+                  });
+            }
+
+            const isPasswordValid = await bcrypt.compare(password, find_user.password);
+
+            if (!isPasswordValid) {
+                  return response_sender({
+                        res,
+                        status_code: 401,
+                        error: true,
+                        data: null,
+                        message: "Incorrect password.",
+                  });
+            }
+
+            delete find_user.password
+
             return response_sender({
                   res,
                   status_code: 200,
                   error: false,
-                  data: null,
-                  message: "User signed out successfully.",
+                  data: find_user,
+                  message: "Login successful.",
             });
-
       } catch (error) {
             next(error);
       }
 };
 
+
 module.exports = {
-      sign_in, sign_out
+      sign_in, sign_in_user
 };
