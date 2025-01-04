@@ -136,14 +136,14 @@ const get_all_jobs = async (req, res, next) => {
 const get_job_search_result = async (req, res, next) => {
       console.log("get_job_search_result", req.query);
       try {
-            const searchQuery = req.query.search.toLowerCase() || "";
-            const category = req.query.category
-            const location = req.query.location
-            const job_type = req.query.job_type
-            const salary_range = req.query.salary_range
+            const searchQuery = req?.query?.search?.toLowerCase() || "";
+            const category = req?.query?.category
+            const location = req?.query?.location
+            const job_type = req?.query?.job_type
+            const salary_range = req?.query?.salary_range
 
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req?.query?.page) || 1;
+            const limit = parseInt(req?.query?.limit) || 10;
             const skip = (page - 1) * limit;
 
             const searchCondition = { $or: [] };
@@ -197,21 +197,7 @@ const get_job_search_result = async (req, res, next) => {
 
 
             const jobs = await jobs_collection
-                  .find(searchCondition, {
-                        projection: {
-                              job_title: 1,
-                              salary_range: 1,
-                              job_type: 1,
-                              experience_level: 1,
-                              location: 1,
-                              expiry_date: 1,
-                              company_info: {
-                                    name: 1,
-                                    logo: 1,
-                              },
-                              url: 1,
-                        },
-                  })
+                  .find(searchCondition)
                   .skip(skip)
                   .limit(limit)
                   .toArray();
@@ -398,4 +384,33 @@ const org_all_jobs_with_info = async (req, res, next) => {
       }
 }
 
-module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs, get_search_suggestions, get_job_info_by_id, org_all_jobs_with_info };
+const get_featured_jobs = async (req, res, next) => {
+      try {
+            const jobs = await jobs_collection.find({ feature_status: true }, {
+                  projection: {
+                        job_title: 1,
+                        job_type: 1,
+                        experience_level: 1,
+                        location: 1,
+                        expiry_date: 1,
+                        company_info: {
+                              name: 1,
+                              logo: 1,
+
+                        },
+                        url: 1,
+                  }
+            }).toArray();
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Jobs fetched successfully",
+                  data: jobs,
+            });
+      } catch (error) {
+            next(error);
+      }
+}
+
+module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs, get_search_suggestions, get_job_info_by_id, org_all_jobs_with_info, get_featured_jobs };
