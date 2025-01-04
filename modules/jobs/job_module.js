@@ -196,29 +196,27 @@ const get_job_search_result = async (req, res, next) => {
             }
 
             else if (!searchQuery.length && !category?.length && !location?.length && !job_type?.length && !salary_range?.length) {
-                  const searchWords = 'a'; // Split the query by spaces
-                  searchWords.forEach((word) => {
-                        const wordRegex = { $regex: word, $options: "i" }; // Create regex for each word
-                        searchCondition.$or.push({ title: wordRegex });
-                        searchCondition.$or.push({ url: wordRegex });
-                        searchCondition.$or.push({ _id: wordRegex });
-                        searchCondition.$or.push({ job_type: wordRegex });
-                        searchCondition.$or.push({ category: wordRegex });
-                        searchCondition.$or.push({ description: wordRegex });
-                        searchCondition.$or.push({ requirements: wordRegex });
-                        searchCondition.$or.push({ skills: wordRegex });
-                        searchCondition.$or.push({ tags: wordRegex });
-                        searchCondition.$or.push({ benefits: wordRegex });
-                        searchCondition.$or.push({ company_size: wordRegex });
-                        searchCondition.$or.push({ experience_level: wordRegex });
-                        searchCondition.$or.push({ location: wordRegex });
-                        searchCondition.$or.push({ "location.city": wordRegex });
-                        searchCondition.$or.push({ "location.state": wordRegex });
-                        searchCondition.$or.push({ "location.country": wordRegex });
-                        searchCondition.$or.push({ "salary_range.min": wordRegex });
-                        searchCondition.$or.push({ "salary_range.max": wordRegex });
-                        searchCondition.$or.push({ "salary_range.currency": wordRegex });
-                  });
+                  const wordRegex = 'a'; // Create regex for each word
+                  searchCondition.$or.push({ title: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ url: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ _id: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ job_type: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ category: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ description: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ requirements: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ skills: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ tags: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ benefits: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ company_size: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ experience_level: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ location: { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ "location.city": { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ "location.state": { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ "location.country": { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ "salary_range.min": { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ "salary_range.max": { $regex: wordRegex, $options: "i" } });
+                  searchCondition.$or.push({ "salary_range.currency": { $regex: wordRegex, $options: "i" } });
+
             }
 
             const jobs = await jobs_collection
