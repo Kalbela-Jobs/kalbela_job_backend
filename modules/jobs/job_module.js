@@ -84,18 +84,17 @@ const update_job = async (req, res, next) => {
 
 const get_all_jobs = async (req, res, next) => {
       try {
-            // Extract page and limit from query parameters, with default values
-            const page = parseInt(req.query.page) || 1; // Default to page 1
-            const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
-            const skip = (page - 1) * limit; // Calculate the number of documents to skip
 
-            // Fetch jobs with pagination
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const skip = (page - 1) * limit;
+
+
             const jobs = await jobs_collection.find({})
                   .skip(skip)
                   .limit(limit)
                   .toArray();
 
-            // Get total count of jobs for calculating total pages
             const totalJobs = await jobs_collection.countDocuments();
 
             response_sender({
@@ -118,113 +117,74 @@ const get_all_jobs = async (req, res, next) => {
       }
 };
 
-//       try {
-//             // Extract page, limit, and search parameters from the query
-//             const page = parseInt(req.query.page) || 1; // Default page is 1
-//             const limit = parseInt(req.query.limit) || 10; // Default limit is 10
-//             const skip = (page - 1) * limit; // Calculate the documents to skip
 
-//             // Parse the search query (if provided)
-//             const search = req.query.search ? req.query.search.trim() : null;
-//             const filter = {};
-
-//             if (search) {
-//                   // Dynamically create a search filter for all fields
-//                   filter.$or = [];
-
-//                   // Loop over all fields and generate a regex search for each one
-//                   const jobFields = [
-//                         "title",
-//                         "description",
-//                         "tags",
-//                         "requirements",
-//                         "company_id",
-//                         "category_id",
-//                         "subcategory_id",
-//                         "salary_range",
-//                         "location",
-//                         "employment_type",
-//                         "currency",
-//                         "company_size"
-//                   ];
-
-//                   // Add dynamic regex queries for each field in the $or condition
-//                   jobFields.forEach((field) => {
-//                         filter.$or.push({ [field]: { $regex: search, $options: "i" } });
-//                   });
-//             }
-
-//             // Fetch jobs based on the filter and apply pagination
-//             const jobs = await jobs_collection.find(filter)
-//                   .skip(skip)
-//                   .limit(limit)
-//                   .toArray();
-
-//             // Total count of matching jobs
-//             const totalJobs = await jobs_collection.countDocuments(filter);
-
-//             // Send the response with jobs and pagination metadata
-//             response_sender({
-//                   res,
-//                   status_code: 200,
-//                   error: false,
-//                   message: "Jobs fetched successfully",
-//                   data: {
-//                         jobs,
-//                         pagination: {
-//                               totalJobs,
-//                               currentPage: page,
-//                               totalPages: Math.ceil(totalJobs / limit),
-//                               limit
-//                         }
-//                   },
-//             });
-//       } catch (err) {
-//             next(err);
-//       }
-// };
 const get_job_search_result = async (req, res, next) => {
       console.log("get_job_search_result", req.query);
       try {
-            const searchQuery = req.query.search || ""; // Get search term from the query string
-            const page = parseInt(req.query.page) || 1; // Get the current page from query, default to 1
-            const limit = parseInt(req.query.limit) || 10; // Get the limit per page from query, default to 10
-            const skip = (page - 1) * limit; // Calculate the number of items to skip for pagination
+            const searchQuery = req.query.search || "";
+            const category = req.query.category
+            const location = req.query.location
+            const job_type = req.query.job_type
+            const salary_range = req.query.salary_range
 
-            // Build the search condition dynamically for any field, including nested fields
-            const searchCondition = {
-                  $or: [
-                        { title: { $regex: searchQuery, $options: "i" } },
-                        { description: { $regex: searchQuery, $options: "i" } },
-                        { requirements: { $regex: searchQuery, $options: "i" } },
-                        { tags: { $regex: searchQuery, $options: "i" } },
-                        { benefits: { $regex: searchQuery, $options: "i" } },
-                        { company_size: { $regex: searchQuery, $options: "i" } },
-                        { experience_level: { $regex: searchQuery, $options: "i" } },
-                        { location: { $regex: searchQuery, $options: "i" } },
-                        { "location.city": { $regex: searchQuery, $options: "i" } }, // Search within city field
-                        { "location.state": { $regex: searchQuery, $options: "i" } }, // Search within state field
-                        { "location.country": { $regex: searchQuery, $options: "i" } }, // Search within country field
-                        { "salary_range.min": { $regex: searchQuery, $options: "i" } }, // Search in min salary range
-                        { "salary_range.max": { $regex: searchQuery, $options: "i" } }, // Search in max salary range
-                        { "salary_range.currency": { $regex: searchQuery, $options: "i" } } // Search in salary currency
-                  ]
-            };
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const skip = (page - 1) * limit;
+
+            const searchCondition = { $or: [] };
 
 
 
+            if (category?.length) {
+                  console.log('hit');
+                  searchCondition.$or.push({ category: { $regex: category, $options: "i" } });
+            }
+            if (location?.length) {
+                  console.log('hit1');
+                  searchCondition.$or.push({ location: { $regex: location, $options: "i" } });
+            }
+            if (job_type?.length) {
+                  console.log('hit2');
+                  searchCondition.$or.push({ job_type: { $regex: job_type, $options: "i" } });
+            }
+            if (salary_range?.length) {
+                  console.log('hit3');
+                  searchCondition.$or.push({ "salary_range.min": { $regex: salary_range, $options: "i" } });
+                  searchCondition.$or.push({ "salary_range.max": { $regex: salary_range, $options: "i" } });
+                  searchCondition.$or.push({ "salary_range.currency": { $regex: salary_range, $options: "i" } });
+            }
 
-            // Perform the search and apply pagination using skip and limit
+            else if (searchQuery.length) {
+                  console.log('hit4');
+                  searchCondition.$or.push({ title: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ _id: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ job_type: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ category: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ description: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ requirements: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ skills: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ tags: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ benefits: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ company_size: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ experience_level: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ location: { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ "location.city": { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ "location.state": { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ "location.country": { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ "salary_range.min": { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ "salary_range.max": { $regex: searchQuery, $options: "i" } });
+                  searchCondition.$or.push({ "salary_range.currency": { $regex: searchQuery, $options: "i" } });
+            }
+
+
             const jobs = await jobs_collection
                   .find(searchCondition)
                   .skip(skip)
                   .limit(limit)
                   .toArray();
 
-            // Get the total count of jobs matching the search condition (for pagination)
+
             const totalCount = await jobs_collection.countDocuments(searchCondition);
-            console.log(searchQuery);
-            // Calculate total pages
             const totalPages = Math.ceil(totalCount / limit);
 
 
@@ -235,8 +195,6 @@ const get_job_search_result = async (req, res, next) => {
                         await search_history_collection.insertOne({ search: searchQuery, timestamp: new Date() });
                   }
             }
-
-            // Respond with paginated search results
             response_sender({
                   res,
                   status_code: 200,
@@ -351,8 +309,8 @@ const get_search_suggestions = async (req, res) => {
 
 
 const get_job_info_by_id = async (req, res, next) => {
-      const id = req.query.id
-      const find_job = await jobs_collection.findOne({ _id: new ObjectId(id) })
+      const url = req.query.url
+      const find_job = await jobs_collection.findOne({ url })
       if (find_job) {
             response_sender({
                   res,
