@@ -5,7 +5,7 @@ const { get_all_jobs, get_job_search_result, update_job, create_job, delete_job,
 
 
 router.get('/', get_job_search_result)
-router.get('/get-by-id', get_job_info_by_id)
+router.get('/get-by-url', get_job_info_by_id)
 router.post('/create', create_job)
 router.put('/update', update_job)
 router.delete('/delete', delete_job)
