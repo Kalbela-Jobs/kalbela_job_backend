@@ -554,11 +554,11 @@
                                     key: '22',
                                     name: 'Get Job Details',
                                     icon: 'briefcase-check',
-                                    endpoint: '/api/v1/jobs/get-by-id?',
+                                    endpoint: '/api/v1/jobs/get-by-url?',
                                     method: 'GET',
                                     description: 'Fetch detailed information for a specific job.',
                                     parameters: [
-                                          { name: 'id', type: 'String', required: 'Yes', description: 'Job ID as a route parameter.' },
+                                          { name: 'url', type: 'String', required: 'Yes', description: 'Job ID as a route parameter.' },
                                     ],
                                     response: {
                                           status_code: 200,
