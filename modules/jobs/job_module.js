@@ -136,7 +136,7 @@ const get_all_jobs = async (req, res, next) => {
 const get_job_search_result = async (req, res, next) => {
       console.log("get_job_search_result", req.query);
       try {
-            const searchQuery = req?.query?.search?.toLowerCase() || "a";
+            const searchQuery = req?.query?.search?.toLowerCase() || "";
             const category = req?.query?.category
             const location = req?.query?.location
             const job_type = req?.query?.job_type
@@ -195,6 +195,31 @@ const get_job_search_result = async (req, res, next) => {
                   });
             }
 
+            else if (!searchQuery.length && !category?.length && !location?.length && !job_type?.length && !salary_range?.length) {
+                  const searchWords = 'a'; // Split the query by spaces
+                  searchWords.forEach((word) => {
+                        const wordRegex = { $regex: word, $options: "i" }; // Create regex for each word
+                        searchCondition.$or.push({ title: wordRegex });
+                        searchCondition.$or.push({ url: wordRegex });
+                        searchCondition.$or.push({ _id: wordRegex });
+                        searchCondition.$or.push({ job_type: wordRegex });
+                        searchCondition.$or.push({ category: wordRegex });
+                        searchCondition.$or.push({ description: wordRegex });
+                        searchCondition.$or.push({ requirements: wordRegex });
+                        searchCondition.$or.push({ skills: wordRegex });
+                        searchCondition.$or.push({ tags: wordRegex });
+                        searchCondition.$or.push({ benefits: wordRegex });
+                        searchCondition.$or.push({ company_size: wordRegex });
+                        searchCondition.$or.push({ experience_level: wordRegex });
+                        searchCondition.$or.push({ location: wordRegex });
+                        searchCondition.$or.push({ "location.city": wordRegex });
+                        searchCondition.$or.push({ "location.state": wordRegex });
+                        searchCondition.$or.push({ "location.country": wordRegex });
+                        searchCondition.$or.push({ "salary_range.min": wordRegex });
+                        searchCondition.$or.push({ "salary_range.max": wordRegex });
+                        searchCondition.$or.push({ "salary_range.currency": wordRegex });
+                  });
+            }
 
             const jobs = await jobs_collection
                   .find(searchCondition)
@@ -214,6 +239,7 @@ const get_job_search_result = async (req, res, next) => {
                         await search_history_collection.insertOne({ search: searchQuery, timestamp: new Date() });
                   }
             }
+
             response_sender({
                   res,
                   status_code: 200,
