@@ -39,7 +39,7 @@ const upload_image = async (req, res, next) => {
                   data.title = image_title;
             }
             const result = await image_collection.insertOne(data);
-            const imageUrl = `${process.env.SERVER_URL}/image/${result.insertedId}`;
+            const imageUrl = `https://image.kalbelajobs.com/image/${result.insertedId}`;
             const fileExtension = mimeType.split("/")[1];
             const file_url = `${imageUrl}.${fileExtension}`
 

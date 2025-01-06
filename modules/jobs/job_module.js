@@ -367,8 +367,11 @@ const get_job_info_by_id = async (req, res, next) => {
 
 const org_all_jobs_with_info = async (req, res, next) => {
       try {
-            const company_website = req.query.org_id
+            const company_website = req.query.slug
+            console.log('company_website', company_website);
             const company_info = await workspace_collection.findOne({ company_website: company_website });
+
+            console.log('company_info', company_info);
             delete company_info.package
             delete company_info.staff
             delete company_info.priority

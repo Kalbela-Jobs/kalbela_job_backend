@@ -453,8 +453,63 @@
                                           }],
                                           message: "Workspace fetched successfully"
                                     }
-                              }
-                              , {
+                              },
+                              {
+                                    "key": "23",
+                                    "name": "Get Organization Jobs",
+                                    "icon": "briefcase",
+                                    "endpoint": "/api/v1/jobs/organization-jobs?slug=kalbelajobs",
+                                    "method": "GET",
+                                    "description": "Fetch jobs posted by a specific organization, along with company information.",
+                                    "parameters": [
+                                          {
+                                                "name": "slug",
+                                                "type": "String",
+                                                "required": "Yes",
+                                                "description": "Organization slug (company website or identifier)."
+                                          }
+                                    ],
+                                    "response": {
+                                          "status_code": 200,
+                                          "error": false,
+                                          "data": {
+                                                "jobs": [
+                                                      {
+                                                            "_id": "64f801a9b9d01126b8af445a",
+                                                            "job_title": "Software Engineer",
+                                                            "salary_range": {
+                                                                  "min": "50000",
+                                                                  "max": "80000",
+                                                                  "currency": "BDT"
+                                                            },
+                                                            "job_type": "Full-Time",
+                                                            "experience_level": "Mid-Level",
+                                                            "location": {
+                                                                  "city": "Dhaka",
+                                                                  "state": "Dhaka Division",
+                                                                  "country": "Bangladesh"
+                                                            },
+                                                            "expiry_date": "2024-12-31T23:59:59.000Z",
+                                                            "company_info": {
+                                                                  "name": "Bright Future Soft",
+                                                                  "logo": "https://example.com/company-logo.png",
+                                                                  "website": "brightfuturesoft.com"
+                                                            },
+                                                            "url": "https://brightfuturesoft.com/jobs/software-engineer"
+                                                      }
+                                                ],
+                                                "company_info": {
+                                                      "name": "Bright Future Soft",
+                                                      "logo": "https://example.com/company-logo.png",
+                                                      "website": "brightfuturesoft.com",
+                                                      "industry": "IT Services"
+                                                }
+                                          },
+                                          "message": "Jobs fetched successfully."
+                                    }
+                              },
+
+                              {
                                     key: '13',
                                     name: 'Get Workspace Information',
                                     icon: 'user-plus',
@@ -595,60 +650,6 @@
                                           message: 'Job details fetched successfully.',
                                     },
                               },
-                              {
-                                    "key": "23",
-                                    "name": "Get Organization Jobs",
-                                    "icon": "briefcase",
-                                    "endpoint": "/api/v1/organization-jobs?org_id=:org_id",
-                                    "method": "GET",
-                                    "description": "Fetch jobs posted by a specific organization, along with company information.",
-                                    "parameters": [
-                                          {
-                                                "name": "org_id",
-                                                "type": "String",
-                                                "required": "Yes",
-                                                "description": "Organization ID (company website or identifier)."
-                                          }
-                                    ],
-                                    "response": {
-                                          "status_code": 200,
-                                          "error": false,
-                                          "data": {
-                                                "jobs": [
-                                                      {
-                                                            "_id": "64f801a9b9d01126b8af445a",
-                                                            "job_title": "Software Engineer",
-                                                            "salary_range": {
-                                                                  "min": "50000",
-                                                                  "max": "80000",
-                                                                  "currency": "BDT"
-                                                            },
-                                                            "job_type": "Full-Time",
-                                                            "experience_level": "Mid-Level",
-                                                            "location": {
-                                                                  "city": "Dhaka",
-                                                                  "state": "Dhaka Division",
-                                                                  "country": "Bangladesh"
-                                                            },
-                                                            "expiry_date": "2024-12-31T23:59:59.000Z",
-                                                            "company_info": {
-                                                                  "name": "Bright Future Soft",
-                                                                  "logo": "https://example.com/company-logo.png",
-                                                                  "website": "brightfuturesoft.com"
-                                                            },
-                                                            "url": "https://brightfuturesoft.com/jobs/software-engineer"
-                                                      }
-                                                ],
-                                                "company_info": {
-                                                      "name": "Bright Future Soft",
-                                                      "logo": "https://example.com/company-logo.png",
-                                                      "website": "brightfuturesoft.com",
-                                                      "industry": "IT Services"
-                                                }
-                                          },
-                                          "message": "Jobs fetched successfully."
-                                    }
-                              },
                         ],
                   },
 
@@ -764,7 +765,7 @@
                                                       </div>
                                                       <Paragraph>{selectedEndpoint.description}</Paragraph>
                                                       <Divider />
-                                                      <Title level={5}>Parameters</Title>
+                                                      <Title level={5}>Parameters or Query Parameters</Title>
                                                       {renderParameters(selectedEndpoint.parameters)}
                                                       <Divider />
                                                       <Title level={5}>Response</Title>
