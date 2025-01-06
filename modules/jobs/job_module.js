@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const { jobs_collection, search_history_collection, workspace_collection } = require("../../collection/collections/system");
+const { jobs_collection, search_history_collection, workspace_collection, category_collection } = require("../../collection/collections/system");
 const { response_sender } = require("../hooks/respose_sender");
 
 
