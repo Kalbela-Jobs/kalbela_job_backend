@@ -2,6 +2,7 @@ const sharp = require("sharp");
 const { ObjectId } = require("mongodb");
 const { image_collection } = require("../../collection/collections/image_collection");
 const { response_sender } = require("../../modules/hooks/respose_sender");
+const { PDFDocument } = require('pdf-lib');
 
 const upload_image = async (req, res, next) => {
 
@@ -15,7 +16,11 @@ const upload_image = async (req, res, next) => {
 
             // Compress the image based on the MIME type
             let compressedImageBuffer;
-            if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
+            console.log('mimeType', mimeType);
+            if (mimeType === 'application/pdf') {
+                  compressedImageBuffer = imageBuffer;
+            }
+            else if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
                   compressedImageBuffer = await sharpInstance
                         .jpeg({ quality: 90 })
                         .toBuffer();
@@ -23,13 +28,31 @@ const upload_image = async (req, res, next) => {
                   compressedImageBuffer = await sharpInstance
                         .png({ compressionLevel: 8 })
                         .toBuffer();
-            } else {
+            }
+            else if (mimeType === "image/webp") {
+                  compressedImageBuffer = await sharpInstance
+                        .webp({ quality: 90 })
+                        .toBuffer();
+            }
+            else if (mimeType === "image/gif") {
+                  compressedImageBuffer = await sharpInstance
+                        .gif()
+                        .toBuffer();
+            }
+
+            else if (mimeType === "image/bmp") {
+                  compressedImageBuffer = await sharpInstance
+                        .bmp()
+                        .toBuffer();
+            }
+            else {
                   return res.status(400).json({ error: "Unsupported image format" });
             }
 
             // Create data object
             let data = {
                   image: compressedImageBuffer,
+                  fileType: mimeType,
                   createdAt: new Date(),
             };
 
@@ -39,7 +62,7 @@ const upload_image = async (req, res, next) => {
                   data.title = image_title;
             }
             const result = await image_collection.insertOne(data);
-            const imageUrl = `https://image.kalbelajobs.com/image/${result.insertedId}`;
+            const imageUrl = `https://image.kalbelajobs.com/api/v1/image/${result.insertedId}`;
             const fileExtension = mimeType.split("/")[1];
             const file_url = `${imageUrl}.${fileExtension}`
 
@@ -58,6 +81,10 @@ const upload_image = async (req, res, next) => {
 };
 
 
+
+
+
+
 const get_image_by_id = async (req, res, next) => {
       try {
             let imageId = req.params.id;
@@ -68,16 +95,29 @@ const get_image_by_id = async (req, res, next) => {
             });
 
             if (!imageDoc) {
-                  res.status(404).json({ error: "Image not found" });
-            } else {
-                  res.contentType("image/jpeg");
-                  const imageBuffer = Buffer.from(imageDoc.image.buffer, "base64");
-                  res.status(200).send(imageBuffer);
+                  return res.status(404).json({ error: "Image not found" });
             }
+
+            if (imageDoc.fileType === 'application/pdf') {
+                  // For PDF files, send directly without processing
+                  res.contentType('application/pdf');
+                  res.setHeader('Content-Disposition', 'inline; filename="document.pdf"');
+                  const pdfBuffer = Buffer.from(imageDoc.image.buffer, 'base64');
+                  return res.send(pdfBuffer);
+            } else {
+                  // For other file types (image formats), handle as before
+                  res.contentType(imageDoc.fileType || 'image/jpeg');
+                  const imageBuffer = Buffer.from(imageDoc.image.buffer, 'base64');
+                  return res.status(200).send(imageBuffer);
+            }
+
       } catch (err) {
-            next(err);
+            console.error('Server error:', err);
+            return res.status(500).json({ error: "Internal server error" });
       }
 };
+
+
 
 module.exports = {
       upload_image,
