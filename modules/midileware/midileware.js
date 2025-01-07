@@ -4,7 +4,7 @@ const { response_sender } = require("../hooks/respose_sender");
 
 const verifyJWT = async (req, res, next) => {
       const token = req.query.token;
-      console.log({ _id: new ObjectId(token) });
+
       if (!token) {
             return response_sender({
                   res,
@@ -16,7 +16,6 @@ const verifyJWT = async (req, res, next) => {
             try {
                   const userIdQuery = { _id: new ObjectId(token) };
                   const findUser = await user_collection.findOne(userIdQuery);
-                  console.log(findUser);
                   if (findUser) {
                         next();
                   } else {
