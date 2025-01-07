@@ -100,6 +100,6 @@ scp -r modules munna@120.50.6.154:/var/www/kalbela_job_backend
 scp -r routers munna@120.50.6.154:/var/www/kalbela_job_backend
 ```
 
-**Password**: `boss2024`
+**Password**: `contact with project manager`
 
 ---
