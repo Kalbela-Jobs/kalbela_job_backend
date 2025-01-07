@@ -16,7 +16,6 @@ const upload_image = async (req, res, next) => {
 
             // Compress the image based on the MIME type
             let compressedImageBuffer;
-            console.log('mimeType', mimeType);
             if (mimeType === 'application/pdf') {
                   compressedImageBuffer = imageBuffer;
             }

@@ -134,7 +134,7 @@ const get_all_jobs = async (req, res, next) => {
 
 
 const get_job_search_result = async (req, res, next) => {
-      console.log("get_job_search_result", req.query);
+
       try {
             const searchQuery = req?.query?.search?.toLowerCase() || "";
             const category = req?.query?.category
@@ -155,15 +155,15 @@ const get_job_search_result = async (req, res, next) => {
                   searchCondition.$or.push({ category: { $regex: get_category_id?._id.toString(), $options: "i" } });
             }
             if (location?.length) {
-                  console.log('hit1');
+
                   searchCondition.$or.push({ location: { $regex: location, $options: "i" } });
             }
             if (job_type?.length) {
-                  console.log('hit2');
+
                   searchCondition.$or.push({ job_type: { $regex: job_type, $options: "i" } });
             }
             if (salary_range?.length) {
-                  console.log('hit3');
+
                   searchCondition.$or.push({ "salary_range.min": { $regex: salary_range, $options: "i" } });
                   searchCondition.$or.push({ "salary_range.max": { $regex: salary_range, $options: "i" } });
                   searchCondition.$or.push({ "salary_range.currency": { $regex: salary_range, $options: "i" } });
@@ -262,7 +262,7 @@ const get_job_search_result = async (req, res, next) => {
 const delete_job = async (req, res, next) => {
       try {
             const { job_id } = req.query;
-            console.log(job_id);
+
             const result = await jobs_collection.deleteOne({ _id: new ObjectId(job_id) });
             if (result.deletedCount === 0) {
                   return res.status(404).json({
@@ -368,10 +368,7 @@ const get_job_info_by_id = async (req, res, next) => {
 const org_all_jobs_with_info = async (req, res, next) => {
       try {
             const company_website = req.query.slug
-            console.log('company_website', company_website);
             const company_info = await workspace_collection.findOne({ company_website: company_website });
-
-            console.log('company_info', company_info);
             delete company_info.package
             delete company_info.staff
             delete company_info.priority

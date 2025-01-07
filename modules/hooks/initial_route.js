@@ -4,7 +4,6 @@ const { response_sender } = require('./respose_sender'); // Ensure this is corre
 
 // Define the route handler first
 const initial_route = async (req, res, next) => {
-      console.log('hit');
       try {
             response_sender({
                   res,
