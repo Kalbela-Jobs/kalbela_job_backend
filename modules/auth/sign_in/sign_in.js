@@ -8,7 +8,6 @@ const sign_in = async (req, res, next) => {
       try {
             const input_data = req.body;
 
-            // Validate that necessary fields are present
             if (!input_data.email || !input_data.password) {
                   return response_sender({
                         res,
@@ -48,7 +47,27 @@ const sign_in = async (req, res, next) => {
                   });
             }
 
-            const workspace = await workspace_collection.findOne({ _id: new ObjectId(find_user.company_id) });
+            if (!find_user?.company_id) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        data: null,
+                        message: "Workspace not found.",
+                  });
+            }
+
+            const workspace = await workspace_collection.findOne({ _id: new ObjectId(find_user?.company_id) });
+
+            if (!workspace) {
+                  return response_sender({
+                        res,
+                        status_code: 404,
+                        error: true,
+                        data: null,
+                        message: "Workspace not found.",
+                  });
+            }
 
             delete workspace.staff
 
