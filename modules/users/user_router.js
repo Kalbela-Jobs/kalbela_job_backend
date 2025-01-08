@@ -1,5 +1,5 @@
 const express = require('express');
-const { apply_jobs } = require('./Apply_jobs/Apply_jobs');
+const { apply_jobs, get_applied_jobs } = require('./Apply_jobs/Apply_jobs');
 const { save_jobs, get_saved_jobs } = require('./Save_jobs/Save_jobs');
 const { update_profile_data } = require('./update/update_profile');
 const { upload_resume, get_resume, delete_resume } = require('./Resume/Resume');
@@ -9,6 +9,7 @@ const { update_user_skill, get_user_skill } = require('./skills/skill');
 const router = express.Router();
 
 router.post('/apply-job', apply_jobs);
+router.get('/get-applied-jobs', get_applied_jobs);
 router.post('/save-jobs', save_jobs);
 router.get('/get-saved-jobs', get_saved_jobs);
 router.put('/update-profile', update_profile_data)

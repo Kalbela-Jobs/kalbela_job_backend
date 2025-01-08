@@ -8,9 +8,7 @@ const update_user_skill = async (req, res, next) => {
             const query = {
                   user_id: user_id
             };
-            console.log(data, user_id);
             const find_skill = await user_skill_collection.findOne(query)
-            console.log(find_skill);
             if (!find_skill) {
                   const create_skill = await user_skill_collection.insertOne(data)
                   response_sender({
