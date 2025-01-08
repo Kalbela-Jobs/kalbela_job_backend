@@ -19,6 +19,7 @@ const apply_jobs = async (req, res, next) => {
             }
             else {
                   const job_post = await jobs_collection.findOne({ url: body.job_slug })
+                  await jobs_collection.updateOne({ _id: job_post._id }, { $inc: { applications_count: 1 } })
                   body.created_at = new Date();
                   body.updated_at = new Date();
                   body.status = "Applied";

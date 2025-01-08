@@ -10,10 +10,11 @@ router.post('/create', create_job)
 router.put('/update', update_job)
 router.delete('/delete', delete_job)
 router.get('/workspace-jobs', get_workspace_jobs)
-router.post('/search', get_all_jobs)
+// router.post('/search', get_all_jobs)
 router.get('/get-suggestions', get_search_suggestions)
 router.get('/organization-jobs', org_all_jobs_with_info)
 router.get('/get-featured-jobs', get_featured_jobs)
+router.get('/get-all-jobs', get_all_jobs)
 
 
 module.exports = router;

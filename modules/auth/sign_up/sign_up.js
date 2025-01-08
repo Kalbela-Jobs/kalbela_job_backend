@@ -63,7 +63,8 @@ const create_user = async (req, res, next) => {
                   return;
             }
 
-            const otp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
+            // const otp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
+            const otp = 123456
             const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
             otpStore[data.email] = { otp, expiry: otpExpiry }; // Store OTP and expiry in memory
 

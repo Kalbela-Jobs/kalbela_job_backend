@@ -31,6 +31,7 @@ const create_job = async (req, res, next) => {
 const update_job = async (req, res, next) => {
       try {
             const { job_id } = req.query;
+            console.log(req.query);
             const updates = req.body;
             if (!job_id) {
                   return res.status(400).json({
@@ -51,7 +52,7 @@ const update_job = async (req, res, next) => {
 
             // Update the job in the database
             const result = await jobs_collection.updateOne(
-                  { _id: job_id },
+                  { _id: new ObjectId(job_id) },
                   {
                         $set: {
                               ...updates,
@@ -90,22 +91,7 @@ const get_all_jobs = async (req, res, next) => {
             const skip = (page - 1) * limit;
 
 
-            const jobs = await jobs_collection.find({},
-                  {
-                        projection: {
-                              job_title: 1,
-                              salary_range: 1,
-                              job_type: 1,
-                              experience_level: 1,
-                              location: 1,
-                              expiry_date: 1,
-                              company_info: {
-                                    name: 1,
-                                    logo: 1,
-                              },
-                              url: 1,
-                        },
-                  })
+            const jobs = await jobs_collection.find({})
                   .skip(skip)
                   .limit(limit)
                   .toArray();

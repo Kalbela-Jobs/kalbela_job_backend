@@ -20,7 +20,10 @@ const sign_in = async (req, res, next) => {
             }
 
             // Find the user by email
-            const find_user = await user_collection.findOne({ email: input_data.email });
+            const find_user = await user_collection.findOne({
+                  email: input_data.email,
+                  role: { $ne: "job_sucker" }
+            });
 
 
             if (!find_user) {
@@ -45,7 +48,7 @@ const sign_in = async (req, res, next) => {
                   });
             }
 
-            const workspace = await workspace_collection.findOne({ _id: new ObjectId(find_user.workspace_id) });
+            const workspace = await workspace_collection.findOne({ _id: new ObjectId(find_user.company_id) });
 
             delete workspace.staff
 
@@ -66,6 +69,7 @@ const sign_in = async (req, res, next) => {
             });
 
       } catch (error) {
+            console.log(error);
             next(error);
       }
 };
