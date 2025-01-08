@@ -67,7 +67,6 @@ const create_user = async (req, res, next) => {
             const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
             otpStore[data.email] = { otp, expiry: otpExpiry }; // Store OTP and expiry in memory
 
-            console.log(otpStore, 'otpStore');
 
             const user_data = {
                   email: data.email,
@@ -131,7 +130,6 @@ const create_user = async (req, res, next) => {
 
 // Verification endpoint
 const verify_email = async (req, res, next) => {
-      console.log(otpStore, 'otpStore');
       try {
             const { email, otp } = req.body;
 
@@ -196,7 +194,6 @@ const verify_email = async (req, res, next) => {
 const regenerate_otp = async (req, res, next) => {
       try {
             const { email } = req.body;
-            console.log(email);
 
             if (!email) {
                   response_sender({
@@ -213,7 +210,6 @@ const regenerate_otp = async (req, res, next) => {
             const newOtp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
             const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
             otpStore[email] = { otp: newOtp, expiry: otpExpiry }; // Update OTP in memory
-            console.log(email, 'otpStore');
 
             // Send email with new OTP
             send_email({
@@ -306,7 +302,6 @@ const create_new_hr_and_user = async (req, res, next) => {
             const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
             otpStore[data.email] = { otp, expiry: otpExpiry }; // Store OTP and expiry in memory
 
-            console.log(otpStore, 'otpStore');
 
             const user_data = {
                   email: data.email,

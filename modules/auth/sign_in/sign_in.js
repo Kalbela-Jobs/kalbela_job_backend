@@ -50,7 +50,7 @@ const sign_in = async (req, res, next) => {
             delete workspace.staff
 
             const { password, ...userData } = find_user;
-            console.log(userData);
+
 
 
             return response_sender({
@@ -74,7 +74,7 @@ const sign_in = async (req, res, next) => {
 const sign_in_user = async (req, res, next) => {
       try {
             const { email, password } = req.body;
-            console.log(req.body);
+
             if (!email || !password) {
                   return response_sender({
                         res,

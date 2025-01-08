@@ -21,6 +21,7 @@ const save_jobs = async (req, res, next) => {
                   const job_post = await jobs_collection.findOne({ _id: new ObjectId(body.job_id) })
                   body.created_at = new Date();
                   body.updated_at = new Date();
+                  body.status = 'pending';
 
                   if (!job_post) {
                         return response_sender({
@@ -52,7 +53,7 @@ const get_saved_jobs = async (req, res, next) => {
             const saved_jobs = await save_jobs_collection.find({ user_id: user_id }).sort({ created_at: -1 }).toArray();
             const jobs = await Promise.all(
                   saved_jobs.map(async (job) => {
-                        const job_post = await jobs_collection.findOne({ _id: new ObjectId(job.job_id) }, {
+                        const job_post = await jobs_collection.findOne({ url: job.job_slug }, {
                               projection: {
                                     job_title: 1,
                                     salary_range: 1,
@@ -63,9 +64,11 @@ const get_saved_jobs = async (req, res, next) => {
                                     company_info: {
                                           name: 1,
                                           logo: 1,
+
                                     },
                                     url: 1,
-                                    status: 1,
+                                    salary_range: 1,
+
                               },
                         });
                         return {
