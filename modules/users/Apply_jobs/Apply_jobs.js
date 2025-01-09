@@ -6,7 +6,7 @@ const { response_sender } = require("../../hooks/respose_sender");
 const apply_jobs = async (req, res, next) => {
       try {
             const body = req.body;
-            const job_query = { job_slug: body.job_slug }
+            const job_query = { job_slug: body.job_slug, user_id: body.user_id }
             const find_jobs = await apply_jobs_collection.findOne(job_query)
             if (find_jobs) {
                   return response_sender({

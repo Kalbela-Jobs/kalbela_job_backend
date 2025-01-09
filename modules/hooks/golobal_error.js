@@ -1,6 +1,9 @@
 const { ZodError } = require('zod');
 
 const GlobalHandler = async (error, req, res, next) => {
+      process.env.NODE_ENV === 'development'
+            ? console.log('globalErrorHandler', error)
+            : console.log('Error from globalError', error);
 
       let statusCode = 500;
       let message = 'Something went wrong';
@@ -22,7 +25,7 @@ const GlobalHandler = async (error, req, res, next) => {
             statusCode = simplifiedError.statusCode;
             message = simplifiedError.message;
             errorMessages = simplifiedError.errorMessages;
-      } else if (error instanceof e) {
+      } else if (error instanceof ApiError) {
             statusCode = error?.statusCode || 500;
             message = error?.message || 'An error occurred';
             errorMessages = error?.message ? [{ path: '', message: message }] : [];
