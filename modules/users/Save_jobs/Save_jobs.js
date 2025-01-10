@@ -6,7 +6,7 @@ const { response_sender } = require("../../hooks/respose_sender");
 const save_jobs = async (req, res, next) => {
       try {
             const body = req.body;
-            const job_query = { job_id: body.job_id }
+            const job_query = { job_id: body.job_id, user_id: body.user_id }
             const find_jobs = await save_jobs_collection.findOne(job_query)
             if (find_jobs) {
                   return response_sender({
@@ -53,7 +53,7 @@ const get_saved_jobs = async (req, res, next) => {
             const saved_jobs = await save_jobs_collection.find({ user_id: user_id }).sort({ created_at: -1 }).toArray();
             const jobs = await Promise.all(
                   saved_jobs.map(async (job) => {
-                        const job_post = await jobs_collection.findOne({ url: job.job_slug }, {
+                        const job_post = await jobs_collection.findOne({ _id: new ObjectId(job.job_id) }, {
                               projection: {
                                     job_title: 1,
                                     salary_range: 1,
