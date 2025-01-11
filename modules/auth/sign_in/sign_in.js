@@ -59,7 +59,7 @@ const sign_in = async (req, res, next) => {
 
             const workspace = await workspace_collection.findOne({ _id: new ObjectId(find_user?.company_id) });
 
-            if (!workspace) {
+            if (!workspace && find_user?.role === 'super_admin') {
                   return response_sender({
                         res,
                         status_code: 404,
@@ -108,7 +108,7 @@ const sign_in_user = async (req, res, next) => {
                   });
             }
 
-            const find_user = await user_collection.findOne({ email });
+            const find_user = await user_collection.findOne({ email, role: "job_sucker" });
 
             if (!find_user) {
                   return response_sender({
