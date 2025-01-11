@@ -272,6 +272,17 @@ const create_new_hr_and_user = async (req, res, next) => {
                   return;
             }
 
+            const find_user = await user_collection.findOne({ email: data.email });
+            if (find_user) {
+                  response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "User already exists",
+                  });
+                  return;
+            }
+
             // Check if the email already exists in the in-memory store
             if (otpStore[data.email]) {
                   response_sender({
