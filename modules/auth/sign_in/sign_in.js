@@ -31,12 +31,12 @@ const sign_in = async (req, res, next) => {
                         status_code: 400,
                         error: true,
                         data: null,
-                        message: "Email is not registered.",
+                        message: "This email is not registered as a Employer.",
                   });
             }
 
 
-            const isPasswordValid = await bcrypt.compare(input_data.password, find_user.password);
+            const isPasswordValid = await bcrypt.compare(input_data?.password, find_user?.password);
             if (!isPasswordValid) {
                   return response_sender({
                         res,
@@ -47,14 +47,27 @@ const sign_in = async (req, res, next) => {
                   });
             }
 
-            if (!find_user?.company_id) {
+            const { password, ...userData } = find_user;
+
+
+
+
+
+
+
+            if (!find_user?.company_id && find_user?.role === 'super_admin') {
                   return response_sender({
                         res,
-                        status_code: 400,
-                        error: true,
-                        data: null,
-                        message: "Workspace not found.",
+                        status_code: 200,
+                        error: false,
+                        data: {
+                              user: userData,
+                              workspace: 'No workspace found for super admin',
+                        },
                   });
+            }
+            if (find_user?.company_id && find_user?.role !== 'super_admin') {
+
             }
 
             const workspace = await workspace_collection.findOne({ _id: new ObjectId(find_user?.company_id) });
@@ -69,9 +82,11 @@ const sign_in = async (req, res, next) => {
                   });
             }
 
-            delete workspace.staff
+            if (workspace) {
+                  delete workspace.staff
+            }
 
-            const { password, ...userData } = find_user;
+
 
 
 
@@ -88,7 +103,6 @@ const sign_in = async (req, res, next) => {
             });
 
       } catch (error) {
-            console.log(error);
             next(error);
       }
 };
