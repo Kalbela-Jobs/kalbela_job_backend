@@ -8,7 +8,7 @@ const create_job = async (req, res, next) => {
             const newJob = req.body;
             const find_url = await jobs_collection.findOne({ url: newJob.url });
             if (find_url) {
-                  newJob.url = `${newJob.url}-${Date.now()}} `
+                  newJob.url = `${newJob.url}-${Date.now()}`;
             }
             newJob.created_at = new Date();
             newJob.updated_at = new Date();
@@ -338,16 +338,22 @@ const get_search_suggestions = async (req, res) => {
 
 
 const get_job_info_by_id = async (req, res, next) => {
-      const url = req.query.url
-      const find_job = await jobs_collection.findOne({ url })
-      if (find_job) {
-            response_sender({
-                  res,
-                  status_code: 200,
-                  error: false,
-                  message: "Jobs fetched successfully",
-                  data: find_job
-            })
+      try {
+            console.log(req.query);
+            const url = req.query.url
+
+            const find_job = await jobs_collection.findOne({ url })
+            if (find_job) {
+                  response_sender({
+                        res,
+                        status_code: 200,
+                        error: false,
+                        message: "Jobs fetched successfully",
+                        data: find_job
+                  })
+            }
+      } catch (error) {
+            next(error)
       }
 }
 
@@ -396,7 +402,10 @@ const org_all_jobs_with_info = async (req, res, next) => {
 
 const get_featured_jobs = async (req, res, next) => {
       try {
-            const jobs = await jobs_collection.find({ feature_status: true }, {
+            const jobs = await jobs_collection.find({
+                  feature_status: true,
+                  status: true
+            }, {
                   projection: {
                         job_title: 1,
                         job_type: 1,

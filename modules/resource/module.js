@@ -110,11 +110,12 @@ const get_search = async (req, res, next) => {
 
 const update_resource = async (req, res, next) => {
       try {
-            const { id } = req.params;
+            const { resource_id } = req.query;
+            console.log(resource_id);
             const update_data = req.body;
 
             const updated = await resource_collection.updateOne(
-                  { _id: new ObjectId(id) },
+                  { _id: new ObjectId(resource_id) },
                   { $set: update_data }
             );
 
@@ -128,7 +129,7 @@ const update_resource = async (req, res, next) => {
                   });
             }
 
-            const updated_resource = await resource_collection.findOne({ _id: new ObjectId(id) });
+            const updated_resource = await resource_collection.findOne({ _id: new ObjectId(resource_id) });
 
             response_sender({
                   res,
@@ -144,9 +145,9 @@ const update_resource = async (req, res, next) => {
 
 const delete_resource = async (req, res, next) => {
       try {
-            const { id } = req.query;
-
-            const deleted = await resource_collection.deleteOne({ _id: new ObjectId(id) });
+            const { resource_id } = req.query;
+            console.log(req.query);
+            const deleted = await resource_collection.deleteOne({ _id: new ObjectId(resource_id) });
 
             if (deleted.deletedCount === 0) {
                   return response_sender({
@@ -163,7 +164,7 @@ const delete_resource = async (req, res, next) => {
                   status_code: 200,
                   error: false,
                   message: "Resource deleted successfully",
-                  data: { id },
+                  data: { resource_id },
             });
       } catch (error) {
             next(error);
