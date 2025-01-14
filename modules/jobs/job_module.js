@@ -368,7 +368,7 @@ const org_all_jobs_with_info = async (req, res, next) => {
             delete company_info.priority
             const jobs = await jobs_collection
                   .find(
-                        { "company_info.company_id": company_info._id.toString() },
+                        { "company_info.company_id": company_info._id.toString(), status: true },
                         {
                               projection: {
                                     job_title: 1,

@@ -1,22 +1,43 @@
 const { ObjectId } = require("mongodb");
-const { category_collection } = require("../../collection/collections/system");
+const { category_collection, mega_category_collection } = require("../../collection/collections/system");
 const { response_sender } = require("../hooks/respose_sender");
+
 
 const get_category = async (req, res, next) => {
       try {
             const categories = await category_collection.find().toArray();
+
+            // Use Promise.all to handle asynchronous operations within map
+            const data = await Promise.all(
+                  categories.map(async category => {
+                        const mega_category = await mega_category_collection.findOne({
+                              _id: new ObjectId(category.mega_category),
+                        });
+
+                        return {
+                              ...category,
+                              mega_category_name: mega_category ? mega_category.name : null,
+                        };
+                  })
+            );
+
             response_sender({
                   res,
                   status_code: 200,
                   error: false,
                   message: "Categories fetched successfully",
-                  data: categories,
+                  data: data,
             });
       } catch (error) {
-            next(error);
+            console.error("Error fetching categories:", error);
+            next({
+                  status_code: 500,
+                  error: true,
+                  message: "Failed to fetch categories",
+            });
       }
+};
 
-}
 
 
 const create_category = async (req, res, next) => {
@@ -114,5 +135,21 @@ const delete_category = async (req, res, next) => {
       }
 }
 
+const get_mega_category = async (req, res, next) => {
+      try {
+            const categories = await mega_category_collection.find().toArray();
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Categories fetched successfully",
+                  data: categories,
+            });
+      } catch (error) {
+            next(error);
+      }
 
-module.exports = { get_category, create_category, update_category, delete_category };
+}
+
+
+module.exports = { get_category, create_category, update_category, delete_category, get_mega_category };

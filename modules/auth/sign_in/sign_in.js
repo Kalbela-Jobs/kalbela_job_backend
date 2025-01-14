@@ -66,11 +66,27 @@ const sign_in = async (req, res, next) => {
                         },
                   });
             }
+
+            let workspace = null;
+
             if (find_user?.company_id && find_user?.role !== 'super_admin') {
+                  workspace = await workspace_collection.findOne({ _id: new ObjectId(find_user?.company_id) });
+            }
+            if (!find_user?.company_id && find_user?.role !== 'super_admin') {
+
+                  return response_sender({
+                        res,
+                        status_code: 200,
+                        error: false,
+                        data: {
+                              user: userData,
+                              workspace: workspace,
+
+                        },
+                        message: "User signed in successfully.",
+                  });
 
             }
-
-            const workspace = await workspace_collection.findOne({ _id: new ObjectId(find_user?.company_id) });
 
             if (!workspace && find_user?.role === 'super_admin') {
                   return response_sender({
@@ -85,10 +101,6 @@ const sign_in = async (req, res, next) => {
             if (workspace) {
                   delete workspace.staff
             }
-
-
-
-
 
             return response_sender({
                   res,
