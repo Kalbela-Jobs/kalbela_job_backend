@@ -190,10 +190,17 @@ const top_five_category_with_mega_category_with_jobs_count = async (req, res, ne
                   })
             );
 
-            res.status(200).send(result);
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Categories fetched successfully",
+                  data: result,
+            });
+
+
       } catch (error) {
-            console.error("Error fetching data:", error);
-            res.status(500).send({ error: "Internal Server Error" });
+            next(error);
       }
 };
 
@@ -231,10 +238,15 @@ const get_category_with_mega_category_with_jobs_count = async (req, res, next) =
                   })
             );
 
-            res.status(200).send(result);
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Categories fetched successfully",
+                  data: result,
+            });
       } catch (error) {
-            console.error("Error fetching data:", error);
-            res.status(500).send({ error: "Internal Server Error" });
+            next(error);
       }
 };
 

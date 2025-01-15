@@ -127,7 +127,25 @@ const get_single_candidate = async (req, res, next) => {
       }
 };
 
+const update_candidate_status = async (req, res, next) => {
+      console.log(req.query, 'req.query');
+      try {
+            const { candidate_id } = req.query;
+            await apply_jobs_collection.updateOne({ _id: new ObjectId(candidate_id) }, { $set: { ...req.body } });
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Candidate status updated successfully",
+                  data: null,
+            });
+      } catch (error) {
+            next(error);
+      }
+};
+
 module.exports = {
       get_all_candidates,
-      get_single_candidate
+      get_single_candidate,
+      update_candidate_status
 };
