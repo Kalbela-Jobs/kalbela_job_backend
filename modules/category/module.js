@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const { category_collection, mega_category_collection } = require("../../collection/collections/system");
+const { category_collection, mega_category_collection, jobs_collection } = require("../../collection/collections/system");
 const { response_sender } = require("../hooks/respose_sender");
 
 
@@ -152,4 +152,92 @@ const get_mega_category = async (req, res, next) => {
 }
 
 
-module.exports = { get_category, create_category, update_category, delete_category, get_mega_category };
+const top_five_category_with_mega_category_with_jobs_count = async (req, res, next) => {
+      try {
+            // Fetch all mega categories
+            const megaCategories = await mega_category_collection.find().toArray();
+
+            // Map through each mega category
+            const result = await Promise.all(
+                  megaCategories.map(async (megaCategory) => {
+                        // Fetch all categories belonging to this mega category
+                        const categories = await category_collection
+                              .find({ mega_category: megaCategory._id.toString() })
+                              .toArray();
+
+                        // Fetch the job count for each category
+                        const categoriesWithJobCounts = await Promise.all(
+                              categories.map(async (category) => {
+                                    const jobCount = await jobs_collection.countDocuments({
+                                          category: category._id.toString(),
+                                    });
+                                    return {
+                                          ...category,
+                                          jobCount,
+                                    };
+                              })
+                        );
+
+                        // Sort categories by jobCount in descending order and get top 5
+                        const topCategories = categoriesWithJobCounts
+                              .sort((a, b) => b.jobCount - a.jobCount) // Sort by job count
+                              .slice(0, 5); // Take the top 5 categories
+
+                        return {
+                              megaCategory: megaCategory.name,
+                              categories: topCategories,
+                        };
+                  })
+            );
+
+            res.status(200).send(result);
+      } catch (error) {
+            console.error("Error fetching data:", error);
+            res.status(500).send({ error: "Internal Server Error" });
+      }
+};
+
+
+const get_category_with_mega_category_with_jobs_count = async (req, res, next) => {
+      try {
+            // Fetch all mega categories
+            const megaCategories = await mega_category_collection.find().toArray();
+
+            // Map through each mega category
+            const result = await Promise.all(
+                  megaCategories.map(async (megaCategory) => {
+                        // Fetch all categories belonging to this mega category
+                        const categories = await category_collection
+                              .find({ mega_category: megaCategory._id.toString() })
+                              .toArray();
+
+                        // Fetch the job count for each category
+                        const categoriesWithJobCounts = await Promise.all(
+                              categories.map(async (category) => {
+                                    const jobCount = await jobs_collection.countDocuments({
+                                          category: category._id.toString(),
+                                    });
+                                    return {
+                                          ...category,
+                                          jobCount,
+                                    };
+                              })
+                        );
+
+                        return {
+                              megaCategory,
+                              categories: categoriesWithJobCounts,
+                        };
+                  })
+            );
+
+            res.status(200).send(result);
+      } catch (error) {
+            console.error("Error fetching data:", error);
+            res.status(500).send({ error: "Internal Server Error" });
+      }
+};
+
+
+
+module.exports = { get_category, create_category, update_category, delete_category, get_mega_category, get_category_with_mega_category_with_jobs_count, top_five_category_with_mega_category_with_jobs_count };
