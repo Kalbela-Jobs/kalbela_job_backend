@@ -61,7 +61,7 @@ const delete_experience = async (req, res, next) => {
 }
 
 const update_experience = async (req, res, next) => {
-      console.log(req.query.experience_id);
+
       try {
             const data = req.body
             const experience_id = req.query.experience_id

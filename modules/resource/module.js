@@ -111,7 +111,7 @@ const get_search = async (req, res, next) => {
 const update_resource = async (req, res, next) => {
       try {
             const { resource_id } = req.query;
-            console.log(resource_id);
+
             const update_data = req.body;
 
             const updated = await resource_collection.updateOne(
@@ -146,7 +146,7 @@ const update_resource = async (req, res, next) => {
 const delete_resource = async (req, res, next) => {
       try {
             const { resource_id } = req.query;
-            console.log(req.query);
+           
             const deleted = await resource_collection.deleteOne({ _id: new ObjectId(resource_id) });
 
             if (deleted.deletedCount === 0) {

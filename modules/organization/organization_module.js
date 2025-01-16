@@ -65,18 +65,40 @@ const create_a_workspace = async (req, res, next) => {
 
 const get_all_workspaces = async (req, res, next) => {
       try {
-            const workspaces = await workspace_collection.find().toArray();
+            const { page, limit, search } = req.query; // Default values for page, limit, and search
+            const currentPage = parseInt(page, 10) || 1;
+            const pageSize = parseInt(limit, 10) || 10;
+
+            const query = search
+                  ? {
+                        company_name: { $regex: search, $options: "i" }
+                  } // Assuming workspace has a 'name' field
+                  : {};
+
+            const totalWorkspaces = await workspace_collection.countDocuments(query);
+            const workspaces = await workspace_collection
+                  .find(query)
+                  .skip((currentPage - 1) * pageSize)
+                  .limit(pageSize)
+                  .toArray();
+
             response_sender({
                   res,
                   status_code: 200,
                   error: false,
                   message: "Workspaces fetched successfully",
-                  data: workspaces,
+                  data: {
+                        total: totalWorkspaces,
+                        page: currentPage,
+                        limit: pageSize,
+                        workspaces,
+                  },
             });
       } catch (error) {
             next(error);
       }
-}
+};
+
 
 const get_workspace = async (req, res, next) => {
       try {
@@ -116,5 +138,19 @@ const update_workspace = async (req, res, next) => {
 
 }
 
+const get_feature_org = async (req, res, next) => {
+      try {
+            const workspace = await workspace_collection.findOne({ feature: true });
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Workspace Information fetched successfully",
+                  data: workspace,
+            });
+      } catch (error) {
+            next(error);
+      }
+}
 
-module.exports = { create_a_workspace, get_workspace, get_all_workspaces, update_workspace };
+module.exports = { create_a_workspace, get_workspace, get_all_workspaces, update_workspace, get_feature_org };

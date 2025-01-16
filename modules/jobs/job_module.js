@@ -31,7 +31,7 @@ const create_job = async (req, res, next) => {
 const update_job = async (req, res, next) => {
       try {
             const { job_id } = req.query;
-            console.log(req.query);
+
             const updates = req.body;
             if (!job_id) {
                   return res.status(400).json({
@@ -339,7 +339,7 @@ const get_search_suggestions = async (req, res) => {
 
 const get_job_info_by_id = async (req, res, next) => {
       try {
-            console.log(req.query);
+          
             const url = req.query.url
 
             const find_job = await jobs_collection.findOne({ url })

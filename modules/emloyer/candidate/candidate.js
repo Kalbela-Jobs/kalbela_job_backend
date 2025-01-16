@@ -53,7 +53,7 @@ const get_all_candidates = async (req, res, next) => {
 const get_single_candidate = async (req, res, next) => {
       try {
             const { candidate_id } = req.query;
-            console.log(candidate_id, 'candidate_id');
+           
             if (
                   candidate_id == null ||
                   candidate_id == undefined
@@ -128,7 +128,6 @@ const get_single_candidate = async (req, res, next) => {
 };
 
 const update_candidate_status = async (req, res, next) => {
-      console.log(req.query, 'req.query');
       try {
             const { candidate_id } = req.query;
             await apply_jobs_collection.updateOne({ _id: new ObjectId(candidate_id) }, { $set: { ...req.body } });
