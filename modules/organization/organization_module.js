@@ -140,7 +140,7 @@ const update_workspace = async (req, res, next) => {
 
 const get_feature_org = async (req, res, next) => {
       try {
-            const workspace = await workspace_collection.findOne({ feature: true });
+            const workspace = await workspace_collection.find({ feature: true }).toArray();
             response_sender({
                   res,
                   status_code: 200,
