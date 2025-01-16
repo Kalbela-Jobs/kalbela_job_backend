@@ -1,7 +1,9 @@
 const { ObjectId } = require("mongodb");
 const { user_collection } = require("../../collection/collections/auth");
-const { workspace_collection } = require("../../collection/collections/system");
+const { workspace_collection, jobs_collection } = require("../../collection/collections/system");
 const { response_sender } = require("../hooks/respose_sender");
+const { apply_jobs_collection, save_jobs_collection } = require("../../collection/collections/users_activity");
+const { client } = require("../../collection/uri");
 
 const create_a_workspace = async (req, res, next) => {
       const data = req.body;
@@ -153,4 +155,60 @@ const get_feature_org = async (req, res, next) => {
       }
 }
 
-module.exports = { create_a_workspace, get_workspace, get_all_workspaces, update_workspace, get_feature_org };
+const delete_organization = async (req, res, next) => {
+      const session = await client.startSession()
+      session.startTransaction();
+
+      try {
+            const { workspace_id } = req.query;
+
+            // Validate workspace_id
+            if (!ObjectId.isValid(workspace_id)) {
+                  throw new Error("Invalid workspace ID");
+            }
+
+            const orgId = new ObjectId(workspace_id);
+
+            // Delete workspace
+            const workspaceResult = await workspace_collection.deleteOne({ _id: orgId }, { session });
+            if (!workspaceResult.deletedCount) {
+                  throw new Error("Workspace not found or already deleted.");
+            }
+
+            // Fetch and delete related jobs
+            const deletedJobs = await jobs_collection.find({ organization_id: workspace_id }, { session }).toArray();
+            const deletedJobIds = deletedJobs.map((job) => job._id.toString());
+            await jobs_collection.deleteMany({ organization_id: workspace_id }, { session });
+
+            // Delete applied jobs
+            await apply_jobs_collection.deleteMany({ organization_id: workspace_id }, { session });
+
+            // Delete saved jobs for deleted job IDs
+            if (deletedJobIds.length > 0) {
+                  await save_jobs_collection.deleteMany(
+                        { job_id: { $in: deletedJobIds } },
+                        { session }
+                  );
+            }
+
+            // Commit the transaction
+            await session.commitTransaction();
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Workspace and related data deleted successfully",
+            });
+      } catch (error) {
+            // Rollback transaction on error
+            await session.abortTransaction();
+            next(error);
+      } finally {
+            // End the session
+            session.endSession();
+      }
+};
+
+
+
+module.exports = { create_a_workspace, get_workspace, get_all_workspaces, update_workspace, get_feature_org, delete_organization };
