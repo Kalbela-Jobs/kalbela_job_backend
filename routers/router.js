@@ -12,6 +12,7 @@ const ai_router = require('../modules/AI/ai_router'); // Adjust the path if nece
 const user_router = require('../modules/users/user_router');
 const resource_router = require('../modules/resource/resource_router')
 const employer_router = require('../modules/emloyer/employer_router')
+const config_router = require('../modules/config/config_router')
 
 // Define module routes
 const modulesRoutes = [
@@ -62,6 +63,10 @@ const modulesRoutes = [
       {
             path: '/employer',
             route: employer_router
+      },
+      {
+            path: '/config',
+            route: config_router
       }
 ];
 

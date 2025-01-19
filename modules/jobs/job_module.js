@@ -85,18 +85,65 @@ const update_job = async (req, res, next) => {
 
 const get_all_jobs = async (req, res, next) => {
       try {
-
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
-            const skip = (page - 1) * limit;
+            const { status, start_date, end_date, page, limit, sort_field = "created_at", sort_order, search_value, featured } = req.query;
 
 
-            const jobs = await jobs_collection.find({})
+            const page_query = page ? parseInt(page) : 1;
+            const limit_query = limit ? parseInt(limit) : 10;
+
+            const skip = (parseInt(page_query) - 1) * parseInt(limit_query);
+            const query = {};
+
+            // Add status filter if provided
+            if (status !== "" && status !== undefined) {
+                  let update_status;
+                  if (status === "true" || status === "false") {
+                        update_status = JSON.parse(status);
+                  }
+                  query.status = update_status;
+            }
+
+            if (featured !== "" && featured !== undefined) {
+                  query.feature_status = JSON.parse(featured);
+            }
+
+            if (search_value) {
+                  query.$or = [
+                        { title: { $regex: search_value, $options: "i" } },
+                        { description: { $regex: search_value, $options: "i" } },
+                        { company_name: { $regex: search_value, $options: "i" } },
+                        { url: { $regex: search_value, $options: "i" } },
+                        { company_info: { company_name: { $regex: search_value, $options: "i" } } },
+                        { job_type: { $regex: search_value, $options: "i" } },
+
+                  ]
+            }
+
+
+            // Add date range filter if provided
+            if (start_date && end_date) {
+                  query.created_at = {
+                        $gte: new Date(start_date),
+                        $lte: new Date(end_date),
+                  };
+            }
+
+            // Sort configuration
+            const sort = {
+                  [sort_field]: sort_order === "asc" ? 1 : -1,
+            };
+
+
+
+            // Fetch jobs with filters, pagination, and sorting
+            const jobs = await jobs_collection.find(query)
+                  .sort(sort)
                   .skip(skip)
-                  .limit(limit)
+                  .limit(parseInt(limit))
                   .toArray();
 
-            const totalJobs = await jobs_collection.countDocuments();
+            // Get the total count of jobs for pagination
+            const total_jobs = await jobs_collection.countDocuments(query);
 
             response_sender({
                   res,
@@ -105,12 +152,9 @@ const get_all_jobs = async (req, res, next) => {
                   message: "Jobs fetched successfully",
                   data: {
                         jobs,
-                        pagination: {
-                              totalJobs,
-                              currentPage: page,
-                              totalPages: Math.ceil(totalJobs / limit),
-                              limit,
-                        }
+                        total_jobs,
+                        total_pages: Math.ceil(total_jobs / limit),
+                        current_page: parseInt(page),
                   },
             });
       } catch (err) {
@@ -267,25 +311,96 @@ const delete_job = async (req, res, next) => {
       }
 };
 
+
+
 const get_workspace_jobs = async (req, res, next) => {
       try {
-            const { workspace_id } = req.query;
-            const page = parseInt(req.query.page) || 1; // Get the current page from query, default to 1
-            const limit = parseInt(req.query.limit) || 10; // Get the limit per page from query, default to 10
-            const skip = (page - 1) * limit; // Calculate the number of items to skip for pagination
-            const jobs = await jobs_collection.find({
-                  "company_info.company_id": workspace_id
-            })
+            const { status, start_date, end_date, page, limit, sort_field = "created_at", sort_order, search_value, featured, workspace_id } = req.query;
+
+            if (!workspace_id) {
+                  return res.status(400).json({
+                        error: true,
+                        message: "Workspace ID is required",
+                  });
+            }
+
+
+
+
+            const page_query = page ? parseInt(page) : 1;
+            const limit_query = limit ? parseInt(limit) : 10;
+
+            const skip = (parseInt(page_query) - 1) * parseInt(limit_query);
+            const query = {};
+
+            if (workspace_id) {
+                  // "company_info.company_id": workspace_id
+                  query["company_info.company_id"] = workspace_id;
+
+            }
+
+            // Add status filter if provided
+            if (status !== "" && status !== undefined) {
+                  let update_status;
+                  if (status === "true" || status === "false") {
+                        update_status = JSON.parse(status);
+                  }
+                  query.status = update_status;
+            }
+
+            if (featured !== "" && featured !== undefined) {
+                  query.feature_status = JSON.parse(featured);
+            }
+
+            if (search_value) {
+                  query.$or = [
+                        { title: { $regex: search_value, $options: "i" } },
+                        { description: { $regex: search_value, $options: "i" } },
+                        { company_name: { $regex: search_value, $options: "i" } },
+                        { url: { $regex: search_value, $options: "i" } },
+                        { company_info: { company_name: { $regex: search_value, $options: "i" } } },
+                        { job_type: { $regex: search_value, $options: "i" } },
+
+                  ]
+            }
+
+
+            // Add date range filter if provided
+            if (start_date && end_date) {
+                  query.created_at = {
+                        $gte: new Date(start_date),
+                        $lte: new Date(end_date),
+                  };
+            }
+
+            // Sort configuration
+            const sort = {
+                  [sort_field]: sort_order === "asc" ? 1 : -1,
+            };
+
+
+
+            // Fetch jobs with filters, pagination, and sorting
+            const jobs = await jobs_collection.find(query)
+                  .sort(sort)
                   .skip(skip)
-                  .limit(limit)
+                  .limit(parseInt(limit))
                   .toArray();
+
+            // Get the total count of jobs for pagination
+            const total_jobs = await jobs_collection.countDocuments(query);
 
             response_sender({
                   res,
                   status_code: 200,
                   error: false,
                   message: "Jobs fetched successfully",
-                  data: jobs,
+                  data: {
+                        jobs,
+                        total_jobs,
+                        total_pages: Math.ceil(total_jobs / limit),
+                        current_page: parseInt(page),
+                  },
             });
       } catch (err) {
             next(err);
@@ -339,7 +454,7 @@ const get_search_suggestions = async (req, res) => {
 
 const get_job_info_by_id = async (req, res, next) => {
       try {
-          
+
             const url = req.query.url
 
             const find_job = await jobs_collection.findOne({ url })
