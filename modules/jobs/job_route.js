@@ -22,4 +22,5 @@ router.post('/create-govt-jobs', create_govt_jobs)
 router.get('/get-all-govt-jobs', get_all_govt_jobs)
 router.delete('/delete-govt-jobs', delete_govt_jobs)
 
+
 module.exports = router;

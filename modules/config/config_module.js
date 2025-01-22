@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const { skill_collection, department_collection, industry_collection, position_collection, location_collection } = require("../../collection/collections/content");
+const { skill_collection, department_collection, industry_collection, position_collection, location_collection, hero_logo_collection } = require("../../collection/collections/content");
 const { response_sender } = require("../hooks/respose_sender");
 
 const create_skill = async (req, res, next) => {
@@ -304,5 +304,52 @@ const get_all_industries = async (req, res, next) => {
 };
 
 
+const add_hero_logo = async (req, res, next) => {
+      try {
+            const hero_logo = req.body;
+            await hero_logo_collection.insertOne(hero_logo);
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Hero logo created successfully",
+                  data: hero_logo,
+            });
+      } catch (error) {
+            next(error);
+      }
+}
 
-module.exports = { create_skill, delete_skill, add_location, delete_location, add_position, delete_position, add_department, delete_department, add_industry, delete_industry, get_all_skills, get_all_locations, get_all_positions, get_all_departments, get_all_industries };
+const delete_hero_logo = async (req, res, next) => {
+      try {
+            const hero_logo_id = req.query.id;
+            await hero_logo_collection.deleteOne({ _id: new ObjectId(hero_logo_id) });
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Hero logo deleted successfully",
+                  data: null,
+            });
+      } catch (error) {
+            next(error);
+      }
+};
+
+const get_hero_logo = async (req, res, next) => {
+      try {
+            const hero_logo = await hero_logo_collection.find({}).toArray();
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Fetched hero logo successfully",
+                  data: hero_logo,
+            });
+      } catch (error) {
+            next(error);
+      }
+};
+
+
+module.exports = { create_skill, delete_skill, add_location, delete_location, add_position, delete_position, add_department, delete_department, add_industry, delete_industry, get_all_skills, get_all_locations, get_all_positions, get_all_departments, get_all_industries, add_hero_logo, get_hero_logo, delete_hero_logo };

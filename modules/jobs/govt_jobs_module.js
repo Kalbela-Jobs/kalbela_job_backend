@@ -39,8 +39,9 @@ const get_all_govt_jobs = async (req, res, next) => {
 
 const delete_govt_jobs = async (req, res, next) => {
       try {
-            const { _id } = req.body;
-            await govt_jobs_collection.deleteOne({ _id: ObjectId(_id) });
+            const { job_id } = req.query;
+            console.log(job_id);
+            await govt_jobs_collection.deleteOne({ _id: new ObjectId(job_id) });
             response_sender({
                   res,
                   status_code: 200,
