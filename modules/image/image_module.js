@@ -19,6 +19,9 @@ const upload_image = async (req, res, next) => {
             if (mimeType === 'application/pdf') {
                   compressedImageBuffer = imageBuffer;
             }
+            else if (mimeType === "image/svg+xml") {
+                  compressedImageBuffer = imageBuffer;
+            }
             else if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
                   compressedImageBuffer = await sharpInstance
                         .jpeg({ quality: 90 })

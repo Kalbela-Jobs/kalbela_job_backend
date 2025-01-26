@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const { job_type_collection } = require("../../collection/collections/system");
+const { job_type_collection, jobs_collection } = require("../../collection/collections/system");
 const { response_sender } = require("../hooks/respose_sender");
 
 const create_job_type = async (req, res, next) => {
@@ -23,18 +23,44 @@ const create_job_type = async (req, res, next) => {
 
 const get_all_jobs = async (req, res, next) => {
       try {
-            const jobs = await job_type_collection.find().toArray();
+            // Step 1: Fetch all job types
+            const jobTypes = await job_type_collection.find().toArray();
+
+            // Step 2: Count the number of jobs for each job type concurrently
+            const result = await Promise.all(
+                  jobTypes.map(async (jobType) => {
+                        // Fetch the count of jobs with this job type
+                        const jobCount = await jobs_collection.countDocuments({
+                              job_type: jobType.name.toString(),  // Match job type ID
+                        });
+
+                        return {
+                              ...jobType,
+                              count: jobCount,
+                        };
+                  })
+            );
+
+            // Step 3: Sort the result by job count in descending order
+            result.sort((a, b) => b.count - a.count);
+
+            // Step 4: Send the response
             response_sender({
                   res,
                   status_code: 200,
                   error: false,
                   message: "Jobs fetched successfully",
-                  data: jobs,
+                  data: result,
             });
       } catch (error) {
-            next(error);
+            console.error("Error fetching jobs:", error);
+            next(error); // Pass errors to the error-handling middleware
       }
-}
+};
+
+
+
+
 
 const update_job_type = async (req, res, next) => {
       try {

@@ -108,16 +108,36 @@ const get_all_jobs = async (req, res, next) => {
             }
 
             if (search_value) {
+                  const searchWords = search_value.split(" ").filter(Boolean); // Split and remove empty strings
                   query.$or = [
-                        { title: { $regex: search_value, $options: "i" } },
-                        { description: { $regex: search_value, $options: "i" } },
-                        { company_name: { $regex: search_value, $options: "i" } },
-                        { url: { $regex: search_value, $options: "i" } },
-                        { company_info: { company_name: { $regex: search_value, $options: "i" } } },
-                        { job_type: { $regex: search_value, $options: "i" } },
-
-                  ]
+                        {
+                              $and: searchWords.map((word) => ({
+                                    title: { $regex: word, $options: "i" },
+                              })),
+                        },
+                        {
+                              $and: searchWords.map((word) => ({
+                                    description: { $regex: word, $options: "i" },
+                              })),
+                        },
+                        {
+                              $and: searchWords.map((word) => ({
+                                    url: { $regex: word, $options: "i" },
+                              })),
+                        },
+                        {
+                              $and: searchWords.map((word) => ({
+                                    "company_info.company_name": { $regex: word, $options: "i" },
+                              })),
+                        },
+                        {
+                              $and: searchWords.map((word) => ({
+                                    job_type: { $regex: word, $options: "i" },
+                              })),
+                        },
+                  ];
             }
+
 
 
             // Add date range filter if provided
@@ -139,9 +159,10 @@ const get_all_jobs = async (req, res, next) => {
             const jobs = await jobs_collection.find(query)
                   .sort(sort)
                   .skip(skip)
-                  .limit(parseInt(limit))
+                  .limit(parseInt(limit_query))
                   .toArray();
 
+            console.log(jobs.length);
             // Get the total count of jobs for pagination
             const total_jobs = await jobs_collection.countDocuments(query);
 
@@ -153,7 +174,7 @@ const get_all_jobs = async (req, res, next) => {
                   data: {
                         jobs,
                         total_jobs,
-                        total_pages: Math.ceil(total_jobs / limit),
+                        total_pages: Math.ceil(total_jobs / limit_query),
                         current_page: parseInt(page),
                   },
             });
