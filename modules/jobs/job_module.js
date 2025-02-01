@@ -162,8 +162,6 @@ const get_all_jobs = async (req, res, next) => {
                   .limit(parseInt(limit_query))
                   .toArray();
 
-            console.log(jobs.length);
-            // Get the total count of jobs for pagination
             const total_jobs = await jobs_collection.countDocuments(query);
 
             response_sender({
