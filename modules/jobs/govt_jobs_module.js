@@ -196,7 +196,8 @@ const get_all_govt_org_and_jobs = async (req, res, next) => {
                               }
                         }
                   ]).toArray(),
-                  govt_org_collection.find({}).toArray()
+                  // by created_at
+                  (await govt_org_collection.find({}).toArray()).sort((a, b) => b.created_at - a.created_at)
             ]);
 
             // Create a map for easy lookup of jobs by org_id

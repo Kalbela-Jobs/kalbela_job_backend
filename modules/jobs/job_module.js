@@ -191,6 +191,7 @@ const get_job_search_result = async (req, res, next) => {
             const job_type = req?.query?.job_type
             const salary_range = req?.query?.salary_range
 
+
             const page = parseInt(req?.query?.page) || 1;
             const limit = parseInt(req?.query?.limit) || 10;
             const skip = (page - 1) * limit;
@@ -268,10 +269,13 @@ const get_job_search_result = async (req, res, next) => {
 
             }
 
+        
+
             const jobs = await jobs_collection
                   .find(searchCondition)
                   .skip(skip)
                   .limit(limit)
+                  .sort({ updated_at: -1 })
                   .toArray();
 
 

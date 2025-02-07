@@ -5,6 +5,8 @@ const { response_sender } = require("../hooks/respose_sender");
 const add_govt_org = async (req, res, next) => {
       try {
             const govt_org_data = req.body;
+            govt_org_data.created_at = new Date();
+            govt_org_data.updated_at = new Date();
             const govt_org = await govt_org_collection.insertOne(govt_org_data);
             response_sender({
                   res,
@@ -22,7 +24,7 @@ const add_govt_org = async (req, res, next) => {
 const delete_govt_org = async (req, res, next) => {
       try {
             const { govt_org_id } = req.query;
-           
+
             const govt_org = await govt_org_collection.deleteOne({ _id: new ObjectId(govt_org_id) });
             response_sender({
                   res,
