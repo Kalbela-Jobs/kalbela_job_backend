@@ -6,6 +6,7 @@ const { govt_org_collection } = require("../../collection/collections/content");
 const create_govt_jobs = async (req, res, next) => {
       try {
             const job_data = req.body;
+            console.log(job_data);
             job_data.created_at = new Date();
             job_data.updated_at = new Date();
             job_data.status = true;

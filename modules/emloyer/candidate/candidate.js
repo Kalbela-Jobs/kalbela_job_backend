@@ -53,7 +53,7 @@ const get_all_candidates = async (req, res, next) => {
 const get_single_candidate = async (req, res, next) => {
       try {
             const { candidate_id } = req.query;
-           
+
             if (
                   candidate_id == null ||
                   candidate_id == undefined
@@ -143,8 +143,64 @@ const update_candidate_status = async (req, res, next) => {
       }
 };
 
+const get_candidate_by_job = async (req, res, next) => {
+      try {
+            const { job_slug, page = 1, limit = 10, search = "" } = req.query;
+            console.log("job_slug", job_slug);
+
+            // Convert page and limit to numbers
+            const pageNumber = parseInt(page);
+            const limitNumber = parseInt(limit);
+            const skip = (pageNumber - 1) * limitNumber;
+
+            // Build the filter query
+            const query = { job_slug };
+
+            console.log("query", query);
+
+            if (search) {
+                  query.$or = [
+                        { name: { $regex: search, $options: "i" } }, // Search by name (case-insensitive)
+                        { email: { $regex: search, $options: "i" } } // Search by email (if applicable)
+                  ];
+            }
+
+            // Fetch candidates with pagination
+            const candidates = await apply_jobs_collection
+                  .find(query)
+                  .skip(skip)
+                  .limit(limitNumber)
+                  .toArray();
+
+            // Get total count for pagination
+            const totalCandidates = await apply_jobs_collection.countDocuments(query);
+            console.log("totalCandidates", totalCandidates);
+
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Candidates fetched successfully",
+                  data: {
+                        candidates,
+                        pagination: {
+                              total: totalCandidates,
+                              page: pageNumber,
+                              limit: limitNumber,
+                              totalPages: Math.ceil(totalCandidates / limitNumber),
+                        },
+                  },
+            });
+
+      } catch (error) {
+            next(error);
+      }
+};
+
+
 module.exports = {
       get_all_candidates,
       get_single_candidate,
-      update_candidate_status
+      update_candidate_status,
+      get_candidate_by_job
 };

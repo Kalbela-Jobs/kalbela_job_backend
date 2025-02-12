@@ -531,4 +531,117 @@ const create_user_as_a_job_sucker = async (req, res, next) => {
 }
 
 
-module.exports = { create_user, verify_email, regenerate_otp, create_new_hr_and_user, get_workspace_hr, create_user_as_a_job_sucker };
+const sign_up_with_google_for_hr = async (req, res, next) => {
+      try {
+            const data = req.body;
+            const user = await user_collection.findOne({ email: data.email, provider: 'google', role: "workspace_admin" });
+            if (user) {
+
+                  let workspace = null;
+                  if (user.company_id) {
+                        workspace = await workspace_collection.findOne({ _id: new ObjectId(user.company_id) });
+                  }
+                  const new_data = { user, workspace }
+                  response_sender({
+                        res,
+                        status_code: 200,
+                        error: false,
+                        message: "Signed in successfully",
+                        data: new_data,
+                  });
+            } else {
+                  const user_data = {
+                        provider: 'google',
+                        email: data.email,
+                        name: data.name,
+                        profile_picture: data.profile_picture,
+                        address: '',
+                        gender: '',
+                        role: "workspace_admin",
+                        date_of_birth: '',
+                        preferences: {
+                              job_alerts: true,
+                              news_letter: true,
+                        },
+                        company_id: '',
+                        company_status: false,
+                        social_links: {},
+                        is_active: false,
+                        email_verify: true,
+                        payment_id: '',
+                        created_at: new Date(),
+                        updated_at: new Date(),
+                  };
+                  const created_user = await user_collection.insertOne(user_data);
+                  const new_data = {
+                        _id: created_user.insertedId.toString(),
+                        ...user_data,
+                  }
+                  response_sender({
+                        res,
+                        status_code: 200,
+                        error: false,
+                        message: "Signed in successfully",
+                        data: { user: new_data },
+                  });
+            }
+      } catch (error) {
+            next(error);
+      }
+};
+
+const sign_up_with_google_for_job_sucker = async (req, res, next) => {
+      try {
+            const data = req.body;
+            const user = await user_collection.findOne({ email: data.email, provider: 'google', role: "job_sucker" });
+            if (user) {
+                  delete user.password;
+                  response_sender({
+                        res,
+                        status_code: 200,
+                        error: false,
+                        message: "Signed in successfully",
+                        data: user,
+                  });
+            } else {
+                  const user_data = {
+                        provider: 'google',
+                        email: data.email,
+                        fullName: data.name,
+                        profile_picture: data.profile_picture,
+                        address: '',
+                        gender: '',
+                        role: "job_sucker",
+                        date_of_birth: '',
+                        preferences: {
+                              job_alerts: true,
+                              news_letter: true,
+                        },
+                        company_status: false,
+                        social_links: {},
+                        is_active: true,
+                        email_verify: true,
+                        payment_id: '',
+                        created_at: new Date(),
+                        updated_at: new Date(),
+                  };
+                  const created_user = await user_collection.insertOne(user_data);
+                  const new_data = {
+                        _id: created_user.insertedId.toString(),
+                        ...user_data,
+                  }
+
+                  response_sender({
+                        res,
+                        status_code: 200,
+                        error: false,
+                        message: "Signed in successfully",
+                        data: new_data,
+                  });
+            }
+      } catch (error) {
+            next(error);
+      }
+}
+
+module.exports = { create_user, verify_email, regenerate_otp, create_new_hr_and_user, get_workspace_hr, create_user_as_a_job_sucker, sign_up_with_google_for_hr, sign_up_with_google_for_job_sucker };

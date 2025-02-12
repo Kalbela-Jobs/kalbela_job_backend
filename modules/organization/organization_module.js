@@ -127,6 +127,20 @@ const update_workspace = async (req, res, next) => {
                   $set: { ...data }
             })
             const workspace = await workspace_collection.findOne(query)
+            // need to update workspace all jobs with new data
+            await jobs_collection.updateMany({ 'company_info.company_id': workspace._id.toString() }, {
+                  $set: {
+                        'company_info': {
+                              name: workspace.company_name,
+                              logo: workspace.logo,
+                              website: workspace.website,
+                              company_size: workspace.company_size,
+                              industry: workspace.industry,
+                              about: workspace.about,
+                              company_address: workspace.company_address
+                        }
+                  }
+            })
             response_sender({
                   res,
                   status_code: 200,

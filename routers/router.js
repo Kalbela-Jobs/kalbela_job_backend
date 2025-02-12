@@ -13,6 +13,7 @@ const user_router = require('../modules/users/user_router');
 const resource_router = require('../modules/resource/resource_router')
 const employer_router = require('../modules/emloyer/employer_router')
 const config_router = require('../modules/config/config_router')
+const chat_router = require('../modules/chat/Chat_router')
 
 // Define module routes
 const modulesRoutes = [
@@ -67,6 +68,10 @@ const modulesRoutes = [
       {
             path: '/config',
             route: config_router
+      },
+      {
+            path: '/chat',
+            route: chat_router
       }
 ];
 
