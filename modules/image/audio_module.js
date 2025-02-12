@@ -21,7 +21,7 @@ const upload_audio = async (req, res, next) => {
             if (audio_title) data.title = audio_title;
             const result = await audio_collection.insertOne(data);
             const fileExtension = mimeType.split("/")[1];
-            const file_url = `http://localhost:5005/api/v1/image/get-audio/${result.insertedId}.${fileExtension}`;
+            const file_url = `https://image.kalbelajobs.com/api/v1/image/get-audio/${result.insertedId}.${fileExtension}`;
 
             response_sender({
                   res,
