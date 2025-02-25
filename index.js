@@ -15,38 +15,31 @@ const port = process.env.PORT || 5005;
 // }));
 
 
-
+const allowedOrigins = [
+      'https://kalbela-jobs-backend.vercel.app',
+      'https://app.kalbelajobs.com',
+      'https://www.app.kalbelajobs.com',
+      'https://kalbelajobs.com',
+      'https://www.kalbelajobs.com',
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://127.0.0.1:3000',
+      'http://192.168.0.101:3000',
+];
 
 const corsOptions = {
-      origin:
-            process.env.NODE_ENV === 'development'
-                  ? [
-                        'https://kalbela-jobs-backend.vercel.app',
-                        'https://app.kalbelajobs.com',
-                        'https://www.app.kalbelajobs.com',
-                        'https://kalbelajobs.com',
-                        'https://www.kalbelajobs.com',
-                        'http://localhost:3000',
-                        'http://localhost:5173',
-                        'http://127.0.0.1:3000',
-                        'http://192.168.0.101:3000',
-                        'https://www.app.kalbelajobs.com',
-                  ]
-                  : [
-                        'https://kalbela-jobs-backend.vercel.app',
-                        'https://app.kalbelajobs.com',
-                        'https://www.app.kalbelajobs.com',
-                        'https://kalbelajobs.com',
-                        'https://www.kalbelajobs.com',
-                        'http://localhost:3000',
-                        'http://localhost:5173',
-                        'http://127.0.0.1:3000',
-                        'http://192.168.0.101:3000',
-                        'https://www.app.kalbelajobs.com',
-                  ],
+      origin: (origin, callback) => {
+            // Allow requests with no origin (like mobile apps or curl requests)
+            if (!origin || allowedOrigins.includes(origin)) {
+                  callback(null, true);
+            } else {
+                  callback(new Error('Not allowed by CORS'));
+            }
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
 };
+
 
 // Middleware
 app.use(cors(corsOptions));
