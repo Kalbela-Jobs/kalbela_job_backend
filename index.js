@@ -27,19 +27,24 @@ const allowedOrigins = [
       'http://192.168.0.101:3000',
 ];
 
-const corsOptions = {
-      origin: (origin, callback) => {
-            // Allow requests with no origin (like mobile apps or curl requests)
-            if (!origin || allowedOrigins.includes(origin)) {
-                  callback(null, true);
-            } else {
-                  callback(new Error('Not allowed by CORS'));
-            }
-      },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-};
+// const corsOptions = {
+//       origin: (origin, callback) => {
+//             // Allow requests with no origin (like mobile apps or curl requests)
+//             if (!origin || allowedOrigins.includes(origin)) {
+//                   callback(null, true);
+//             } else {
+//                   callback(new Error('Not allowed by CORS'));
+//             }
+//       },
+//       credentials: true,
+//       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+// };
 
+const corsOptions = {
+      origin: '*', // Allow all origins
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      credentials: true, // Optional: Allow cookies and credentials
+};
 
 // Middleware
 app.use(cors(corsOptions));

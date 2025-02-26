@@ -594,6 +594,7 @@ const sign_up_with_google_for_job_sucker = async (req, res, next) => {
       try {
             const data = req.body;
             const user = await user_collection.findOne({ email: data.email, provider: 'google', role: "job_sucker" });
+            console.log(user);
             if (user) {
                   delete user.password;
                   response_sender({
@@ -640,6 +641,7 @@ const sign_up_with_google_for_job_sucker = async (req, res, next) => {
                   });
             }
       } catch (error) {
+            console.log(error);
             next(error);
       }
 }
