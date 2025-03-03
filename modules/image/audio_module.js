@@ -38,7 +38,7 @@ const upload_audio = async (req, res, next) => {
 const get_audio_by_id = async (req, res, next) => {
       try {
             let audioId = req.params.id.replace(/\.[^/.]+$/, "");
-            console.log(audioId);
+       
             const audioDoc = await audio_collection.findOne({ _id: new ObjectId(audioId) });
             if (!audioDoc) return res.status(404).json({ error: "Audio not found" });
             res.contentType(audioDoc.fileType || 'audio/mpeg');

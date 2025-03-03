@@ -87,7 +87,6 @@ const get_all_workspaces = async (req, res, next) => {
                   .limit(pageSize)
                   .toArray();
 
-            console.log(workspaces);
             response_sender({
                   res,
                   status_code: 200,

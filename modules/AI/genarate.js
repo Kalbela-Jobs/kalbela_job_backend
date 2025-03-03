@@ -22,7 +22,7 @@ const generate_job_description = async (req, res, next) => {
                   // qualifications,
                   benefits,
             }
-            console.log(generatedContent);
+
 
             response_sender({
                   res,
