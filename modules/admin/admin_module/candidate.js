@@ -48,4 +48,26 @@ const get_all_candidates = async (req, res, next) => {
       }
 };
 
-module.exports = { get_all_candidates };
+const update_candidate_info = async (req, res, next) => {
+      try {
+            const { candidate_id } = req.query;
+            const data = req.body;
+            await user_collection.updateOne({ _id: new ObjectId(candidate_id) },
+                  {
+                        $set: {
+                              ...data,
+                              updated_at: new Date(),
+                        }
+                  });
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Candidate info updated successfully",
+            });
+      } catch (error) {
+            next(error);
+      }
+}
+
+module.exports = { get_all_candidates, update_candidate_info };
