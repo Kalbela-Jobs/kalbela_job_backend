@@ -14,12 +14,17 @@ const resource_router = require('../modules/resource/resource_router')
 const employer_router = require('../modules/emloyer/employer_router')
 const config_router = require('../modules/config/config_router')
 const chat_router = require('../modules/chat/Chat_router')
+const admin_router = require('../modules/admin/admin_router')
 
 // Define module routes
 const modulesRoutes = [
       {
             path: '/',         // Default path
             route: initial_route,
+      },
+      {
+            path: "/admin",
+            route: admin_router
       },
       {
             path: '/image',    // Image routes
@@ -72,7 +77,8 @@ const modulesRoutes = [
       {
             path: '/chat',
             route: chat_router
-      }
+      },
+
 ];
 
 // Attach each route to the main router
