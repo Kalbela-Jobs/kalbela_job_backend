@@ -70,4 +70,19 @@ const update_candidate_info = async (req, res, next) => {
       }
 }
 
-module.exports = { get_all_candidates, update_candidate_info };
+const delete_candidate = async (req, res, next) => {
+      try {
+            const { candidate_id } = req.query;
+            await user_collection.deleteOne({ _id: new ObjectId(candidate_id) });
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Candidate deleted successfully",
+            });
+      } catch (error) {
+            next(error);
+      }
+}
+
+module.exports = { get_all_candidates, update_candidate_info, delete_candidate };
