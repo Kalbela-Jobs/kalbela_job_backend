@@ -1,7 +1,7 @@
 const { ObjectId } = require("mongodb")
 const { user_collection } = require("../../collection/collections/auth")
 const { response_sender } = require("../hooks/respose_sender")
-const { certification_collection, experience_collection, user_skill_collection } = require("../../collection/collections/users_activity")
+const { certification_collection, experience_collection, user_skill_collection, education_collection } = require("../../collection/collections/users_activity")
 
 const get_user_profile = async (req, res, next) => {
       try {
@@ -21,10 +21,10 @@ const get_user_profile = async (req, res, next) => {
             delete user._id
             delete user.preferences
             delete user.payment_id
-            user.certifications = await certification_collection.find({ user_id: new ObjectId(user_id) }).toArray()
-            user.experience = await experience_collection.find({ user_id: new ObjectId(user_id) }).toArray()
-            user.skills = await user_skill_collection.findOne({ user_id: new ObjectId(user_id) })
-
+            user.certifications = await certification_collection.find({ user_id: user_id }).toArray()
+            user.experience = await experience_collection.find({ user_id: user_id }).toArray()
+            user.skills = await user_skill_collection.findOne({ user_id: user_id })
+            user.education = await education_collection.find({ user_id: user_id }).toArray()
             response_sender({
                   res,
                   status_code: 200,
