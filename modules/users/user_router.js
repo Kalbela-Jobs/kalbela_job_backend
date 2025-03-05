@@ -7,6 +7,7 @@ const { upload_education, get_education, delete_education, update_education } = 
 const { post_certification, get_certification, delete_certification, update_certification } = require('./certifiaction/certification');
 const { update_user_skill, get_user_skill } = require('./skills/skill');
 const { upload_experience, get_experience, delete_experience, update_experience } = require('./experiace/experiance');
+const { get_user_profile } = require('./get_user_profile');
 const router = express.Router();
 
 router.post('/apply-job', apply_jobs);
@@ -31,6 +32,7 @@ router.post('/upload-experience', upload_experience)
 router.get('/get-experience', get_experience)
 router.delete('/delete-experience', delete_experience)
 router.patch('/update-experience', update_experience)
+router.get('/user-profile', get_user_profile)
 
 
 

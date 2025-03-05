@@ -77,7 +77,10 @@ const get_all_workspaces = async (req, res, next) => {
                   } // Assuming workspace has a 'name' field
                   : {};
 
+
+
             const totalWorkspaces = await workspace_collection.countDocuments(query);
+
             const workspaces = await workspace_collection
                   .find(query)
                   .skip((currentPage - 1) * pageSize)

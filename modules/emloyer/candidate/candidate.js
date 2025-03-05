@@ -146,7 +146,7 @@ const update_candidate_status = async (req, res, next) => {
 const get_candidate_by_job = async (req, res, next) => {
       try {
             const { job_slug, page = 1, limit = 10, search = "" } = req.query;
-            console.log("job_slug", job_slug);
+
 
             // Convert page and limit to numbers
             const pageNumber = parseInt(page);
@@ -156,7 +156,6 @@ const get_candidate_by_job = async (req, res, next) => {
             // Build the filter query
             const query = { job_slug };
 
-            console.log("query", query);
 
             if (search) {
                   query.$or = [
@@ -174,7 +173,7 @@ const get_candidate_by_job = async (req, res, next) => {
 
             // Get total count for pagination
             const totalCandidates = await apply_jobs_collection.countDocuments(query);
-            console.log("totalCandidates", totalCandidates);
+          
 
             response_sender({
                   res,

@@ -89,7 +89,6 @@ const get_all_messaged_users = async (req, res, next) => {
                         );
                         // Get the last message
                         const lastMessage = userMessages[0] || {};
-                        console.log(lastMessage, 'lastMessage');
 
                         // Check if message is empty, audio, or has attachments
                         let lastMessageContent = lastMessage.content || ''; // Default to empty string
