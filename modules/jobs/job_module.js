@@ -190,13 +190,14 @@ const get_job_search_result = async (req, res, next) => {
             const location = req?.query?.location
             const job_type = req?.query?.job_type
             const salary_range = req?.query?.salary_range
+            const currentDate = new Date().toISOString();
 
 
             const page = parseInt(req?.query?.page) || 1;
             const limit = parseInt(req?.query?.limit) || 10;
             const skip = (page - 1) * limit;
 
-            const searchCondition = { $or: [] };
+            const searchCondition = { $or: [], expiry_date: { $gte: currentDate } };
 
 
 
@@ -269,7 +270,7 @@ const get_job_search_result = async (req, res, next) => {
 
             }
 
-        
+
 
             const jobs = await jobs_collection
                   .find(searchCondition)
@@ -499,14 +500,34 @@ const org_all_jobs_with_info = async (req, res, next) => {
       try {
             const company_website = req.query.slug
             const company_info = await workspace_collection.findOne({ company_website: company_website });
+            console.log(company_info);
             delete company_info.package
             delete company_info.staff
             delete company_info.priority
             delete company_info.status
             delete company_info.priority
+            const currentDate = new Date().toISOString();
+            console.log(
+                  { "company_info.company_id": company_info._id.toString(), status: true, },
+                  {
+                        projection: {
+                              job_title: 1,
+                              salary_range: 1,
+                              job_type: 1,
+                              experience_level: 1,
+                              location: 1,
+                              expiry_date: 1,
+                              company_info: {
+                                    name: 1,
+                                    logo: 1,
+                              },
+                              url: 1,
+                        },
+                  }
+            );
             const jobs = await jobs_collection
                   .find(
-                        { "company_info.company_id": company_info._id.toString(), status: true },
+                        { "company_info.company_id": company_info._id.toString(), status: true, },
                         {
                               projection: {
                                     job_title: 1,
@@ -540,24 +561,28 @@ const org_all_jobs_with_info = async (req, res, next) => {
 
 const get_featured_jobs = async (req, res, next) => {
       try {
+            const currentDate = new Date().toISOString(); // Get current date in ISO format
+
             const jobs = await jobs_collection.find({
                   feature_status: true,
-                  status: true
+                  status: true,
+                  expiry_date: {
+                        $gte: currentDate // Compare as a string
+                  }
             }, {
                   projection: {
                         job_title: 1,
                         job_type: 1,
                         experience_level: 1,
                         location: 1,
-                        expiry_date: 1,
                         company_info: {
                               name: 1,
                               logo: 1,
-
                         },
                         url: 1,
                   }
             }).toArray();
+
             response_sender({
                   res,
                   status_code: 200,
@@ -569,5 +594,6 @@ const get_featured_jobs = async (req, res, next) => {
             next(error);
       }
 }
+
 
 module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs, get_search_suggestions, get_job_info_by_id, org_all_jobs_with_info, get_featured_jobs };

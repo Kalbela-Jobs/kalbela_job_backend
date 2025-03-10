@@ -32,6 +32,8 @@ const get_all_jobs = async (req, res, next) => {
                         // Fetch the count of jobs with this job type
                         const jobCount = await jobs_collection.countDocuments({
                               job_type: jobType.name.toString(),  // Match job type ID
+                              status: true,
+                              expiry_date: { $gte: new Date().toISOString() },
                         });
 
                         return {

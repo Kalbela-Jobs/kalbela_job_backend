@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 const httpStatus = require("http-status");
 const { GlobalHandler } = require("./modules/hooks/golobal_error");
 const routes = require("./routers/router");
+const routes_v2 = require("./routers/v2Routes");
 const path = require("path");
 
 const app = express();
@@ -57,6 +58,7 @@ app.get("/", (req, res) => {
 });
 // Routes
 app.use('/api/v1', routes);
+app.use('/api/v2', routes_v2);
 
 // Root route
 

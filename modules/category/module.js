@@ -170,6 +170,8 @@ const top_five_category_with_mega_category_with_jobs_count = async (req, res, ne
                               categories.map(async (category) => {
                                     const jobCount = await jobs_collection.countDocuments({
                                           category: category._id.toString(),
+                                          status: true,
+                                          expiry_date: { $gte: new Date().toISOString() },
                                     });
                                     return {
                                           ...category,
