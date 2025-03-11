@@ -1,6 +1,7 @@
 const { ObjectId } = require("mongodb");
 const { govt_org_collection } = require("../../collection/collections/content");
 const { response_sender } = require("../hooks/respose_sender");
+const { govt_jobs_collection } = require("../../collection/collections/system");
 
 const add_govt_org = async (req, res, next) => {
       try {
@@ -20,6 +21,60 @@ const add_govt_org = async (req, res, next) => {
       }
 };
 
+const update_govt_org = async (req, res, next) => {
+      try {
+            const { govt_org_id } = req.query;
+            const updates = req.body;
+
+            if (!govt_org_id || !ObjectId.isValid(govt_org_id)) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Invalid or missing government organization ID",
+                  });
+            }
+
+            const org_data = {
+                  name: updates.name,
+                  logo: updates.logo,
+                  description: updates.description,
+                  website: updates.org_website
+            };
+
+            const govt_org_update_result = await govt_org_collection.updateOne(
+                  { _id: new ObjectId(govt_org_id) },
+                  { $set: org_data }
+            );
+
+            if (govt_org_update_result.matchedCount === 0) {
+                  return response_sender({
+                        res,
+                        status_code: 404,
+                        error: true,
+                        message: "Government organization not found",
+                  });
+            }
+
+            const govt_jobs_update_result = await govt_jobs_collection.updateMany(
+                  { "organization.id": govt_org_id },
+                  { $set: org_data }
+            );
+
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Government organization updated successfully",
+                  data: {
+                        govt_org_update_result,
+                        govt_jobs_update_result,
+                  },
+            });
+      } catch (error) {
+            next(error);
+      }
+};
 
 const delete_govt_org = async (req, res, next) => {
       try {
@@ -53,4 +108,4 @@ const get_all_govt_org = async (req, res, next) => {
       }
 };
 
-module.exports = { add_govt_org, delete_govt_org, get_all_govt_org };
+module.exports = { add_govt_org, delete_govt_org, get_all_govt_org, update_govt_org };
