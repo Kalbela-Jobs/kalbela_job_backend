@@ -85,7 +85,7 @@ const update_job = async (req, res, next) => {
 
 const get_all_jobs = async (req, res, next) => {
       try {
-            const { status, start_date, end_date, page, limit, sort_field = "created_at", sort_order, search_value, featured } = req.query;
+            const { status, start_date, end_date, page, limit, sort_field = "created_at", sort_order, search_value, featured, expired } = req.query;
 
 
             const page_query = page ? parseInt(page) : 1;
@@ -106,6 +106,21 @@ const get_all_jobs = async (req, res, next) => {
             if (featured !== "" && featured !== undefined) {
                   query.feature_status = JSON.parse(featured);
             }
+
+            const currentDate = new Date().toISOString();
+            console.log(expired);
+            if (expired === "" || expired === undefined) {
+                  // Show non-expired jobs if expired parameter is undefined or empty
+                  query.expiry_date = { $gte: currentDate };
+            } else {
+                  if (JSON.parse(expired)) {
+                        // Show expired jobs
+                        query.expiry_date = { $lt: currentDate };
+                  } else {
+                        query.expiry_date = { $gte: currentDate };
+                  }
+            }
+
 
             if (search_value) {
                   const searchWords = search_value.split(" ").filter(Boolean); // Split and remove empty strings
@@ -137,6 +152,7 @@ const get_all_jobs = async (req, res, next) => {
                         },
                   ];
             }
+
 
 
 
@@ -190,13 +206,13 @@ const get_job_search_result = async (req, res, next) => {
             const location = req?.query?.location
             const job_type = req?.query?.job_type
             const salary_range = req?.query?.salary_range
-            const currentDate = new Date().toISOString();
+
 
 
             const page = parseInt(req?.query?.page) || 1;
             const limit = parseInt(req?.query?.limit) || 10;
             const skip = (page - 1) * limit;
-
+            const currentDate = new Date().toISOString();
             const searchCondition = { $or: [], expiry_date: { $gte: currentDate } };
 
 
