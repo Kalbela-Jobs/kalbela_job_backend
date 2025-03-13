@@ -25,6 +25,7 @@ const update_govt_org = async (req, res, next) => {
       try {
             const { govt_org_id } = req.query;
             const updates = req.body;
+            console.log(updates);
 
             if (!govt_org_id || !ObjectId.isValid(govt_org_id)) {
                   return response_sender({
@@ -39,7 +40,9 @@ const update_govt_org = async (req, res, next) => {
                   name: updates.name,
                   logo: updates.logo,
                   description: updates.description,
-                  website: updates.org_website
+                  org_website: updates.org_website,
+                  updated_at: new Date(),
+                  banner: updates.banner,
             };
 
             const govt_org_update_result = await govt_org_collection.updateOne(
@@ -58,8 +61,10 @@ const update_govt_org = async (req, res, next) => {
 
             const govt_jobs_update_result = await govt_jobs_collection.updateMany(
                   { "organization.id": govt_org_id },
-                  { $set: org_data }
+                  { $set: { organization: org_data } }
             );
+
+
 
             response_sender({
                   res,
