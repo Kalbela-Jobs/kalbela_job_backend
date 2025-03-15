@@ -64,7 +64,7 @@ router.put("/upload-image", uploadImage.single("image"), (req, res, next) => {
       try {
             if (!req.file) return res.status(400).json({ error: "No image file uploaded" });
 
-            const fileUrl = `http://localhost:5005/api/v2/image/${req.file.filename}`;
+            const fileUrl = `https://image.kalbelajobs.com/api/v2/image/${req.file.filename}`;
             response_sender({
                   res,
                   status_code: 200,
@@ -94,7 +94,7 @@ router.put("/upload-audio", uploadAudio.single("audio"), (req, res, next) => {
       try {
             if (!req.file) return res.status(400).json({ error: "No audio file uploaded" });
 
-            const fileUrl = `http://localhost:5005/api/v2/image/get-audio/${req.file.filename}`;
+            const fileUrl = `https://image.kalbelajobs.com/api/v2/image/get-audio/${req.file.filename}`;
             response_sender({
                   res,
                   status_code: 200,
