@@ -1,55 +1,67 @@
-const { ObjectId } = require("mongodb");
-const { audio_collection } = require("../../collection/collections/image_collection");
-const { response_sender } = require("../hooks/respose_sender");
+const path = require("path");
+const fs = require("fs");
 
-const upload_audio = async (req, res, next) => {
-      try {
-            const audioBuffer = req.file.buffer;
-            const mimeType = req.file.mimetype;
-            const audio_title = req.body?.title;
+// Define audio directory
+const audioDirectory = path.join(__dirname, "../../collection/assets/audio");
 
-            if (!mimeType.startsWith("audio/")) {
-                  return res.status(400).json({ error: "Unsupported audio format" });
-            }
+// Ensure the directory exists
+if (!fs.existsSync(audioDirectory)) {
+      fs.mkdirSync(audioDirectory, { recursive: true });
+}
 
-            let data = {
-                  audio: audioBuffer,
-                  fileType: mimeType,
-                  createdAt: new Date(),
-            };
-
-            if (audio_title) data.title = audio_title;
-            const result = await audio_collection.insertOne(data);
-            const fileExtension = mimeType.split("/")[1];
-            const file_url = `https://image.kalbelajobs.com/api/v1/image/get-audio/${result.insertedId}.${fileExtension}`;
-
-            response_sender({
-                  res,
-                  status_code: 200,
-                  error: false,
-                  message: "Audio uploaded successfully",
-                  data: { audio_url: file_url },
-            });
-      } catch (err) {
-            next(err);
-      }
+// Function to sanitize filenames (remove special characters)
+const sanitizeFilename = (filename) => {
+      return filename.replace(/[^a-zA-Z0-9.-]/g, "_").toLowerCase();
 };
 
-const get_audio_by_id = async (req, res, next) => {
-      try {
-            let audioId = req.params.id.replace(/\.[^/.]+$/, "");
-            console.log(audioId);
-            const audioDoc = await audio_collection.findOne({ _id: new ObjectId(audioId) });
-            if (!audioDoc) return res.status(404).json({ error: "Audio not found" });
-            res.contentType(audioDoc.fileType || 'audio/mpeg');
-            return res.status(200).send(Buffer.from(audioDoc.audio.buffer, 'base64'));
-      } catch (err) {
-            console.error('Server error:', err);
-            return res.status(500).json({ error: "Internal server error" });
+// Function to get the next available filename (avoid overwriting)
+const getNextAudioFilename = (originalName) => {
+      const ext = path.extname(originalName);
+      const baseName = sanitizeFilename(path.basename(originalName, ext));
+
+      let newFilename = `${baseName}${ext}`;
+      let counter = 1;
+
+      while (fs.existsSync(path.join(audioDirectory, newFilename))) {
+            newFilename = `${baseName}_${counter}${ext}`;
+            counter++;
       }
+
+      return newFilename;
 };
 
+// Audio upload function
+const upload_audio = async (req, res) => {
+      const file = req.file;
+      if (!file) {
+            return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const fileUrl = `https://image.kalbelajobs.com/api/v2/get-audio/${file.filename}.`;
+      res.status(200).json({ message: "Audio uploaded successfully", fileUrl });
+};
+
+// Function to get audio file by ID
+const get_audio_by_id = async (req, res) => {
+      const { id } = req.params;
+
+      // Find files that match the ID
+      const files = fs.readdirSync(audioDirectory).filter(file =>
+            path.basename(file, path.extname(file)) === id
+      );
+
+      if (files.length === 0) {
+            return res.status(404).json({ error: "File not found" });
+      }
+
+      const file = files[0];
+      const fileUrl = `https://image.kalbelajobs.com/api/v2/get-audio/${file}`;
+
+      res.status(200).json({ fileUrl });
+};
+
+// Export functions
 module.exports = {
       upload_audio,
-      get_audio_by_id
-}
+      get_audio_by_id,
+};
