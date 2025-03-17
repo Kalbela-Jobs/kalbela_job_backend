@@ -8,9 +8,12 @@ const router = express.Router();
 
 const imageDir = path.join(__dirname, "../../assets/images");
 const audioDir = path.join(__dirname, "../../assets/audio");
+const tempDir = path.join(__dirname, "../../assets/temp");
 
-if (!fs.existsSync(imageDir)) fs.mkdirSync(imageDir, { recursive: true });
-if (!fs.existsSync(audioDir)) fs.mkdirSync(audioDir, { recursive: true });
+// Create directories if they don't exist
+[imageDir, audioDir, tempDir].forEach(dir => {
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
 
 const getNextFilename = (dir, extension) => {
       const files = fs.readdirSync(dir)
@@ -32,26 +35,54 @@ const getNextAudioFilename = (dir) => {
       return `${nextNumber}.mp3`;
 };
 
-const storage = multer.memoryStorage();
+// Use disk storage instead of memory storage
+const imageStorage = multer.diskStorage({
+      destination: function (req, file, cb) {
+            cb(null, tempDir);
+      },
+      filename: function (req, file, cb) {
+            cb(null, Date.now() + path.extname(file.originalname));
+      }
+});
+
+const audioStorage = multer.diskStorage({
+      destination: function (req, file, cb) {
+            cb(null, tempDir);
+      },
+      filename: function (req, file, cb) {
+            cb(null, Date.now() + '.mp3');
+      }
+});
 
 const uploadImage = multer({
-      storage,
+      storage: imageStorage,
       limits: { fileSize: 20 * 1024 * 1024 } // 20MB
 });
 
 const uploadAudio = multer({
-      storage,
+      storage: audioStorage,
       limits: { fileSize: 20 * 1024 * 1024 } // 20MB
 });
 
-const saveBufferToFile = (buffer, dir, filename) => {
+// Move file using streams instead of copying buffer
+const moveFile = (sourcePath, destDir, destFilename) => {
       return new Promise((resolve, reject) => {
-            const filePath = path.join(dir, filename);
-            const writeStream = fs.createWriteStream(filePath);
-            writeStream.write(buffer);
-            writeStream.end();
-            writeStream.on('finish', () => resolve(filePath));
+            const destPath = path.join(destDir, destFilename);
+            const readStream = fs.createReadStream(sourcePath);
+            const writeStream = fs.createWriteStream(destPath);
+
+            readStream.on('error', reject);
             writeStream.on('error', reject);
+            writeStream.on('finish', () => {
+                  // Remove the temp file after successful move
+                  fs.unlink(sourcePath, (err) => {
+                        if (err) console.error('Failed to delete temp file:', err);
+                        resolve(destPath);
+                  });
+            });
+
+            // Pipe the file stream
+            readStream.pipe(writeStream);
       });
 };
 
@@ -61,7 +92,9 @@ router.put("/upload-image", uploadImage.single("image"), async (req, res, next) 
 
             const extension = path.extname(req.file.originalname).slice(1);
             const nextFilename = getNextFilename(imageDir, extension);
-            await saveBufferToFile(req.file.buffer, imageDir, nextFilename);
+
+            // Move the file from temp to final destination
+            await moveFile(req.file.path, imageDir, nextFilename);
 
             const fileUrl = `https://image.kalbelajobs.com/api/v2/image/${nextFilename}`;
             response_sender({
@@ -88,7 +121,9 @@ router.put("/upload-audio", uploadAudio.single("audio"), async (req, res, next) 
             if (!req.file) return res.status(400).json({ error: "No audio file uploaded" });
 
             const nextFilename = getNextAudioFilename(audioDir);
-            await saveBufferToFile(req.file.buffer, audioDir, nextFilename);
+
+            // Move the file from temp to final destination
+            await moveFile(req.file.path, audioDir, nextFilename);
 
             const fileUrl = `https://image.kalbelajobs.com/api/v2/image/get-audio/${nextFilename}`;
             response_sender({
