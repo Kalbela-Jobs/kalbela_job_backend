@@ -1,5 +1,7 @@
 const express = require("express");
 const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 const { MongoClient, GridFSBucket, ObjectId } = require("mongodb");
 const { response_sender } = require("../../modules/hooks/respose_sender");
 require("dotenv").config();
@@ -8,42 +10,40 @@ const router = express.Router();
 
 // MongoDB Configuration
 const mongoURI = process.env.MONGO_URI;
-const DB_NAME = "images"; // Ensure this database exists
+const DB_NAME = "images";
 
 const client = new MongoClient(mongoURI);
 let gridFSBucket;
 
-// ✅ Connect to MongoDB
-async function connectDB() {
-      try {
-            await client.connect();
-            const db = client.db(DB_NAME);
-            gridFSBucket = new GridFSBucket(db, { bucketName: "uploads" });
-            console.log("✅ Connected to MongoDB");
-      } catch (err) {
-            console.error("❌ MongoDB Connection Failed:", err);
-            process.exit(1);
-      }
+// Connect to MongoDB
+client.connect().then(() => {
+      const db = client.db(DB_NAME);
+      gridFSBucket = new GridFSBucket(db, { bucketName: "uploads" });
+      console.log("✅ Connected to MongoDB");
+}).catch((err) => {
+      console.error("❌ MongoDB Connection Failed:", err);
+});
+
+// Ensure Upload Directory Exists
+const UPLOADS_DIR = path.join(__dirname, "../../uploads");
+if (!fs.existsSync(UPLOADS_DIR)) {
+      fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
-connectDB();
 
-const ensureDBConnection = (req, res, next) => {
-      if (!gridFSBucket) {
-            return response_sender({
-                  res,
-                  status_code: 500,
-                  error: true,
-                  message: "Database connection not ready",
-                  data: null,
-            });
-      }
-      next();
-};
+// Multer Setup for Disk Storage
+const storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+            cb(null, UPLOADS_DIR);
+      },
+      filename: (req, file, cb) => {
+            const ext = path.extname(file.originalname);
+            cb(null, `${Date.now()}-${file.fieldname}${ext}`);
+      },
+});
 
+const upload = multer({ storage });
 
-const upload = multer({ storage: multer.memoryStorage() });
-
-
+// ✅ **Upload Image**
 const upload_image_v2 = async (req, res, next) => {
       if (!req.file) {
             return response_sender({
@@ -56,19 +56,26 @@ const upload_image_v2 = async (req, res, next) => {
       }
 
       try {
-            const { originalname, buffer, mimetype } = req.file;
-            const ext = originalname.split(".").pop();
+            const { originalname, mimetype, path: filePath } = req.file;
+            const ext = path.extname(originalname);
 
+            if (!gridFSBucket) {
+                  return response_sender({
+                        res,
+                        status_code: 500,
+                        error: true,
+                        message: "Database connection not ready",
+                        data: null,
+                  });
+            }
+
+            // Upload file to GridFS
             const uploadStream = gridFSBucket.openUploadStream(originalname, { contentType: mimetype });
-            uploadStream.end(buffer);
-
-            uploadStream.on("error", (err) => {
-                  console.error("❌ Upload Stream Error:", err);
-                  next(err);
-            });
+            fs.createReadStream(filePath).pipe(uploadStream);
 
             uploadStream.on("finish", async () => {
-                  const file_url = `https://server.kalbelajobs.com/api/v2/image/${uploadStream.id}.${ext}`;
+                  const file_url = `http://localhost:5005/api/v1/image/${uploadStream.id}${ext}`;
+
                   const db = client.db(DB_NAME);
                   const image_collection = db.collection("image_collection");
 
@@ -79,6 +86,9 @@ const upload_image_v2 = async (req, res, next) => {
                         file_url,
                         created_at: new Date(),
                   });
+
+                  // Remove local file after upload
+                  fs.unlinkSync(filePath);
 
                   response_sender({
                         res,
@@ -94,33 +104,27 @@ const upload_image_v2 = async (req, res, next) => {
       }
 };
 
-
+// ✅ **Get Image by ID**
 const get_image_by_id_v2 = async (req, res, next) => {
       try {
-            let imageId = req.params.id.replace(/\.[^/.]+$/, "");
+            let imageId = req.params.id;
+            imageId = imageId.replace(/\.[^/.]+$/, ""); // Remove file extension if present
 
             if (!ObjectId.isValid(imageId)) {
-                  return response_sender({
-                        res,
-                        status_code: 400,
-                        error: true,
-                        message: "Invalid Image ID",
-                        data: null,
-                  });
+                  return res.status(400).json({ error: "Invalid Image ID" });
+            }
+
+            if (!gridFSBucket) {
+                  return res.status(500).json({ error: "Database connection not ready" });
             }
 
             const db = client.db(DB_NAME);
             const image_collection = db.collection("image_collection");
+
             const imageDoc = await image_collection.findOne({ file_id: new ObjectId(imageId) });
 
             if (!imageDoc) {
-                  return response_sender({
-                        res,
-                        status_code: 404,
-                        error: true,
-                        message: "Image not found",
-                        data: null,
-                  });
+                  return res.status(404).json({ error: "Image not found" });
             }
 
             res.contentType(imageDoc.file_type || "image/jpeg");
@@ -132,14 +136,7 @@ const get_image_by_id_v2 = async (req, res, next) => {
             const downloadStream = gridFSBucket.openDownloadStream(new ObjectId(imageId));
 
             downloadStream.on("error", (err) => {
-                  console.error("❌ File Read Error:", err);
-                  return response_sender({
-                        res,
-                        status_code: 500,
-                        error: true,
-                        message: "Error reading file",
-                        data: { details: err.message },
-                  });
+                  return res.status(500).json({ error: "Error reading file", details: err.message });
             });
 
             downloadStream.pipe(res);
@@ -149,8 +146,8 @@ const get_image_by_id_v2 = async (req, res, next) => {
       }
 };
 
-// ✅ Define Routes
-router.get("/:id", ensureDBConnection, get_image_by_id_v2);
-router.put("/upload-image", ensureDBConnection, upload.single("image"), upload_image_v2);
+// Define Routes
+router.get("/:id", get_image_by_id_v2);
+router.put("/upload-image", upload.single("image"), upload_image_v2);
 
 module.exports = router;
