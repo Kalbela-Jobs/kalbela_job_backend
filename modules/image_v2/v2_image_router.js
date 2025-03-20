@@ -1,138 +1,156 @@
 const express = require("express");
 const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
-const { response_sender } = require("../hooks/respose_sender");
+const { MongoClient, GridFSBucket, ObjectId } = require("mongodb");
+const { response_sender } = require("../../modules/hooks/respose_sender");
+require("dotenv").config();
 
 const router = express.Router();
 
-const imageDir = path.join(__dirname, "../../assets/images");
-const audioDir = path.join(__dirname, "../../assets/audio");
-const tempDir = path.join(__dirname, "../../assets/temp");
+// MongoDB Configuration
+const mongoURI = process.env.MONGO_URI;
+const DB_NAME = "images"; // Ensure this database exists
 
-// Ensure directories exist
-[imageDir, audioDir, tempDir].forEach(dir => {
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-});
+const client = new MongoClient(mongoURI);
+let gridFSBucket;
 
-const getNextFilename = (dir, extension) => {
-      const files = fs.readdirSync(dir)
-            .filter(file => file.match(/^\d+\.[a-zA-Z]+$/))
-            .map(file => parseInt(file.split(".")[0]))
-            .sort((a, b) => a - b);
+// ✅ Connect to MongoDB
+async function connectDB() {
+      try {
+            await client.connect();
+            const db = client.db(DB_NAME);
+            gridFSBucket = new GridFSBucket(db, { bucketName: "uploads" });
+            console.log("✅ Connected to MongoDB");
+      } catch (err) {
+            console.error("❌ MongoDB Connection Failed:", err);
+            process.exit(1);
+      }
+}
+connectDB();
 
-      const nextNumber = files.length > 0 ? files[files.length - 1] + 1 : 1;
-      return `${nextNumber}.${extension}`;
+const ensureDBConnection = (req, res, next) => {
+      if (!gridFSBucket) {
+            return response_sender({
+                  res,
+                  status_code: 500,
+                  error: true,
+                  message: "Database connection not ready",
+                  data: null,
+            });
+      }
+      next();
 };
 
-const getNextAudioFilename = (dir) => {
-      const files = fs.readdirSync(dir)
-            .filter(file => file.match(/^\d+\.mp3$/))
-            .map(file => parseInt(file.split(".")[0]))
-            .sort((a, b) => a - b);
 
-      const nextNumber = files.length > 0 ? files[files.length - 1] + 1 : 1;
-      return `${nextNumber}.mp3`;
+const upload = multer({ storage: multer.memoryStorage() });
+
+
+const upload_image_v2 = async (req, res, next) => {
+      if (!req.file) {
+            return response_sender({
+                  res,
+                  status_code: 400,
+                  error: true,
+                  message: "No file uploaded",
+                  data: null,
+            });
+      }
+
+      try {
+            const { originalname, buffer, mimetype } = req.file;
+            const ext = originalname.split(".").pop();
+
+            const uploadStream = gridFSBucket.openUploadStream(originalname, { contentType: mimetype });
+            uploadStream.end(buffer);
+
+            uploadStream.on("error", (err) => {
+                  console.error("❌ Upload Stream Error:", err);
+                  next(err);
+            });
+
+            uploadStream.on("finish", async () => {
+                  const file_url = `https://server.kalbelajobs.com/api/v2/image/${uploadStream.id}.${ext}`;
+                  const db = client.db(DB_NAME);
+                  const image_collection = db.collection("image_collection");
+
+                  await image_collection.insertOne({
+                        file_id: uploadStream.id,
+                        file_name: originalname,
+                        file_type: mimetype,
+                        file_url,
+                        created_at: new Date(),
+                  });
+
+                  response_sender({
+                        res,
+                        status_code: 200,
+                        error: false,
+                        message: "File uploaded successfully",
+                        data: { image_url: file_url },
+                  });
+            });
+      } catch (error) {
+            console.error("❌ Upload Error:", error);
+            next(error);
+      }
 };
 
-// Multer disk storage for images
-const imageStorage = multer.diskStorage({
-      destination: (req, file, cb) => cb(null, tempDir),
-      filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
-});
 
-// Multer disk storage for audio
-const audioStorage = multer.diskStorage({
-      destination: (req, file, cb) => cb(null, tempDir),
-      filename: (req, file, cb) => cb(null, Date.now() + ".mp3")
-});
+const get_image_by_id_v2 = async (req, res, next) => {
+      try {
+            let imageId = req.params.id.replace(/\.[^/.]+$/, "");
 
-const uploadImage = multer({ storage: imageStorage, limits: { fileSize: 20 * 1024 * 1024 } });
-const uploadAudio = multer({ storage: audioStorage, limits: { fileSize: 20 * 1024 * 1024 } });
+            if (!ObjectId.isValid(imageId)) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Invalid Image ID",
+                        data: null,
+                  });
+            }
 
-// Move file using streams
-const moveFile = (sourcePath, destDir, destFilename) => {
-      return new Promise((resolve, reject) => {
-            const destPath = path.join(destDir, destFilename);
-            const readStream = fs.createReadStream(sourcePath);
-            const writeStream = fs.createWriteStream(destPath);
+            const db = client.db(DB_NAME);
+            const image_collection = db.collection("image_collection");
+            const imageDoc = await image_collection.findOne({ file_id: new ObjectId(imageId) });
 
-            readStream.on("error", reject);
-            writeStream.on("error", reject);
-            writeStream.on("finish", () => {
-                  fs.unlink(sourcePath, (err) => {
-                        if (err) console.error("Failed to delete temp file:", err);
-                        resolve(destPath);
+            if (!imageDoc) {
+                  return response_sender({
+                        res,
+                        status_code: 404,
+                        error: true,
+                        message: "Image not found",
+                        data: null,
+                  });
+            }
+
+            res.contentType(imageDoc.file_type || "image/jpeg");
+
+            if (imageDoc.file_type === "application/pdf") {
+                  res.setHeader("Content-Disposition", 'inline; filename="document.pdf"');
+            }
+
+            const downloadStream = gridFSBucket.openDownloadStream(new ObjectId(imageId));
+
+            downloadStream.on("error", (err) => {
+                  console.error("❌ File Read Error:", err);
+                  return response_sender({
+                        res,
+                        status_code: 500,
+                        error: true,
+                        message: "Error reading file",
+                        data: { details: err.message },
                   });
             });
 
-            readStream.pipe(writeStream);
-      });
+            downloadStream.pipe(res);
+      } catch (error) {
+            console.error("❌ Fetch Error:", error);
+            next(error);
+      }
 };
 
-// Upload Image
-router.put("/upload-image", uploadImage.single("image"), async (req, res, next) => {
-      try {
-            if (!req.file) return res.status(400).json({ error: "No image file uploaded" });
-
-            const extension = path.extname(req.file.originalname).slice(1);
-            const nextFilename = getNextFilename(imageDir, extension);
-
-            await moveFile(req.file.path, imageDir, nextFilename);
-
-            const fileUrl = `https://image.kalbelajobs.com/api/v2/image/${nextFilename}`;
-            response_sender({
-                  res,
-                  status_code: 200,
-                  error: false,
-                  message: "Image uploaded successfully",
-                  data: { image_url: fileUrl },
-            });
-      } catch (error) {
-            next(error);
-      }
-});
-
-// Stream Image File
-router.get("/:filename", (req, res) => {
-      const filePath = path.join(imageDir, req.params.filename);
-      if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Image not found" });
-
-      res.setHeader("Content-Type", "image/*");
-      const readStream = fs.createReadStream(filePath);
-      readStream.pipe(res);
-});
-
-// Upload Audio
-router.put("/upload-audio", uploadAudio.single("audio"), async (req, res, next) => {
-      try {
-            if (!req.file) return res.status(400).json({ error: "No audio file uploaded" });
-
-            const nextFilename = getNextAudioFilename(audioDir);
-
-            await moveFile(req.file.path, audioDir, nextFilename);
-
-            const fileUrl = `https://image.kalbelajobs.com/api/v2/image/get-audio/${nextFilename}`;
-            response_sender({
-                  res,
-                  status_code: 200,
-                  error: false,
-                  message: "Audio uploaded successfully",
-                  data: { audio_url: fileUrl },
-            });
-      } catch (error) {
-            next(error);
-      }
-});
-
-// Stream Audio File
-router.get("/get-audio/:filename", (req, res) => {
-      const filePath = path.join(audioDir, req.params.filename);
-      if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Audio not found" });
-
-      res.setHeader("Content-Type", "audio/mpeg");
-      const readStream = fs.createReadStream(filePath);
-      readStream.pipe(res);
-});
+// ✅ Define Routes
+router.get("/:id", ensureDBConnection, get_image_by_id_v2);
+router.put("/upload-image", ensureDBConnection, upload.single("image"), upload_image_v2);
 
 module.exports = router;

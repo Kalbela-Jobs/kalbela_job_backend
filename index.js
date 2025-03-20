@@ -6,6 +6,8 @@ const { GlobalHandler } = require("./modules/hooks/golobal_error");
 const routes = require("./routers/router");
 const routes_v2 = require("./routers/v2Routes");
 const path = require("path");
+const mysql = require("mysql2");
+
 
 const app = express();
 const port = process.env.PORT || 5005;
@@ -47,23 +49,25 @@ const corsOptions = {
       credentials: true, // Optional: Allow cookies and credentials
 };
 
+
+
+
+
+
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
       res.sendFile(path.join(__dirname, "index.html"));
 });
 // Routes
 app.use('/api/v1', routes);
 app.use('/api/v2', routes_v2);
 
-// Root route
 
-
-// Error handling middleware
 app.use(GlobalHandler);
 
 // 404 Error handler
@@ -79,5 +83,6 @@ app.use((req, res, next) => {
 
 // Start server
 app.listen(port, () => {
+
       console.log(`Server is running at http://localhost:${port}`);
 });
