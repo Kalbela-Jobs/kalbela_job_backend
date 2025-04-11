@@ -110,8 +110,6 @@ const create_new_workspace_user = async (req, res, next) => {
 const delete_workspace_staff = async (req, res, next) => {
       try {
             const { staff_id, workplace_id } = req.query;
-            console.log(staff_id, workplace_id);
-
             const workspaceId = new ObjectId(workplace_id);
 
             await workspace_collection.updateOne(

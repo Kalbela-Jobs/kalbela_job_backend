@@ -25,8 +25,6 @@ const update_govt_org = async (req, res, next) => {
       try {
             const { govt_org_id } = req.query;
             const updates = req.body;
-            console.log(updates);
-
             if (!govt_org_id || !ObjectId.isValid(govt_org_id)) {
                   return response_sender({
                         res,

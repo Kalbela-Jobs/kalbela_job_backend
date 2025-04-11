@@ -19,7 +19,7 @@ let gridFSBucket;
 client.connect().then(() => {
       const db = client.db(DB_NAME);
       gridFSBucket = new GridFSBucket(db, { bucketName: "uploads" });
-      console.log("✅ Connected to MongoDB");
+
 }).catch((err) => {
       console.error("❌ MongoDB Connection Failed:", err);
 });
@@ -74,7 +74,7 @@ const upload_image_v2 = async (req, res, next) => {
             fs.createReadStream(filePath).pipe(uploadStream);
 
             uploadStream.on("finish", async () => {
-                  const file_url = `http://localhost:5005/api/v1/image/${uploadStream.id}${ext}`;
+                  const file_url = `https://server.kalbelajobs.com/api/v2/image/${uploadStream.id}${ext}`;
 
                   const db = client.db(DB_NAME);
                   const image_collection = db.collection("image_collection");

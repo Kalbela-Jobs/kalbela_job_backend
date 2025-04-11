@@ -25,13 +25,29 @@ const create_govt_jobs = async (req, res, next) => {
 
 const get_all_govt_jobs = async (req, res, next) => {
       try {
-            const jobs = await govt_jobs_collection.find().toArray();
+            const currentDate = new Date().toISOString();
+            const page_size = parseInt(req.query.page_size) || 15;
+            const page = parseInt(req.query.page) || 1;
+            const skip = (page - 1) * page_size;
+            const limit = parseInt(page_size);
+            const jobs = await govt_jobs_collection.find({
+
+            }).skip(skip).limit(limit).toArray();
+
+            const total_jobs = await govt_jobs_collection.countDocuments({
+
+            });
             response_sender({
                   res,
                   status_code: 200,
                   error: false,
                   message: "Govt jobs fetched successfully",
-                  data: jobs,
+                  data: {
+                        jobs,
+                        total_jobs,
+                        current_page: page,
+                        total_pages: Math.ceil(total_jobs / page_size),
+                  },
             });
       } catch (error) {
             next(error);

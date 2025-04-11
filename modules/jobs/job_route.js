@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs, get_search_suggestions, get_job_info_by_id, org_all_jobs_with_info, get_featured_jobs } = require('./job_module');
 const { create_govt_jobs, get_all_govt_jobs, delete_govt_jobs, get_govt_job_suggestions_by_org, get_single_govt_jobs, get_all_govt_org_and_jobs, update_govt_jobs } = require('./govt_jobs_module');
+const { new_jobs, earliest_deadline, internship, skilled_jobs, tenders, worldwide_jobs } = require('./get_jobs');
 
 
 
@@ -24,6 +25,17 @@ router.delete('/delete-govt-jobs', delete_govt_jobs)
 router.get('/get-govt-suggestions-by-org', get_govt_job_suggestions_by_org)
 router.get('/get-all-org-jobs', get_all_govt_org_and_jobs)
 router.put('/update-govt-job', update_govt_jobs)
+
+router.get('/new-jobs', new_jobs)
+router.get('/earliest-deadline', earliest_deadline)
+router.get('/internship', internship)
+router.get('/skilled-jobs', skilled_jobs)
+router.get('/tenders', tenders)
+router.get('/worldwide-jobs', worldwide_jobs)
+
+
+
+
 
 
 

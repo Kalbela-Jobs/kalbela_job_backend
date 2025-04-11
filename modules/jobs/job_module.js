@@ -108,7 +108,7 @@ const get_all_jobs = async (req, res, next) => {
             }
 
             const currentDate = new Date().toISOString();
-            console.log(expired);
+
             if (expired === "" || expired === undefined) {
                   // Show non-expired jobs if expired parameter is undefined or empty
                   query.expiry_date = { $gte: currentDate };
@@ -352,7 +352,6 @@ const delete_job = async (req, res, next) => {
 };
 
 
-
 const get_workspace_jobs = async (req, res, next) => {
       try {
             const { status, start_date, end_date, page, limit, sort_field = "created_at", sort_order, search_value, featured, workspace_id } = req.query;
@@ -516,31 +515,13 @@ const org_all_jobs_with_info = async (req, res, next) => {
       try {
             const company_website = req.query.slug
             const company_info = await workspace_collection.findOne({ company_website: company_website });
-            console.log(company_info);
             delete company_info.package
             delete company_info.staff
             delete company_info.priority
             delete company_info.status
             delete company_info.priority
             const currentDate = new Date().toISOString();
-            console.log(
-                  { "company_info.company_id": company_info._id.toString(), status: true, },
-                  {
-                        projection: {
-                              job_title: 1,
-                              salary_range: 1,
-                              job_type: 1,
-                              experience_level: 1,
-                              location: 1,
-                              expiry_date: 1,
-                              company_info: {
-                                    name: 1,
-                                    logo: 1,
-                              },
-                              url: 1,
-                        },
-                  }
-            );
+          
             const jobs = await jobs_collection
                   .find(
                         { "company_info.company_id": company_info._id.toString(), status: true, },
@@ -577,39 +558,51 @@ const org_all_jobs_with_info = async (req, res, next) => {
 
 const get_featured_jobs = async (req, res, next) => {
       try {
-            const currentDate = new Date().toISOString(); // Get current date in ISO format
+            const currentDate = new Date().toISOString();
+            const page_size = parseInt(req.query.page_size) || 15;
+            const page = parseInt(req.query.page) || 1;
+            const skip = (page - 1) * page_size;
 
-            const jobs = await jobs_collection.find({
+            const query = {
                   feature_status: true,
                   status: true,
-                  expiry_date: {
-                        $gte: currentDate // Compare as a string
-                  }
-            }, {
-                  projection: {
-                        job_title: 1,
-                        job_type: 1,
-                        experience_level: 1,
-                        location: 1,
-                        company_info: {
-                              name: 1,
-                              logo: 1,
-                        },
-                        url: 1,
-                  }
-            }).toArray();
+                  expiry_date: { $gte: currentDate }
+            };
+
+            const projection = {
+                  job_title: 1,
+                  job_type: 1,
+                  experience_level: 1,
+                  location: 1,
+                  company_info: {
+                        name: 1,
+                        logo: 1,
+                  },
+                  url: 1,
+            };
+
+            const cursor = jobs_collection.find(query, { projection });
+
+            const jobs = await cursor.skip(skip).limit(page_size).toArray();
+            const total_jobs = await jobs_collection.countDocuments(query);
 
             response_sender({
                   res,
                   status_code: 200,
                   error: false,
-                  message: "Jobs fetched successfully",
-                  data: jobs,
+                  message: "Hot Jobs fetched successfully",
+                  data: {
+                        jobs,
+                        total_jobs,
+                        current_page: page,
+                        total_pages: Math.ceil(total_jobs / page_size),
+                  },
             });
       } catch (error) {
             next(error);
       }
 }
+
 
 
 module.exports = { get_all_jobs, get_job_search_result, update_job, create_job, delete_job, get_workspace_jobs, get_search_suggestions, get_job_info_by_id, org_all_jobs_with_info, get_featured_jobs };
