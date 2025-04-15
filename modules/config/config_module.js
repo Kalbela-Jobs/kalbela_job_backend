@@ -1,5 +1,6 @@
 const { ObjectId } = require("mongodb");
 const { skill_collection, department_collection, industry_collection, position_collection, location_collection, hero_logo_collection } = require("../../collection/collections/content");
+const { jobs_collection } = require("../../collection/collections/system");
 const { response_sender } = require("../hooks/respose_sender");
 
 const create_skill = async (req, res, next) => {
@@ -351,5 +352,70 @@ const get_hero_logo = async (req, res, next) => {
       }
 };
 
+const get_job_by_industry = async (req, res, next) => {
+      try {
+            const today = new Date().toISOString();
 
-module.exports = { create_skill, delete_skill, add_location, delete_location, add_position, delete_position, add_department, delete_department, add_industry, delete_industry, get_all_skills, get_all_locations, get_all_positions, get_all_departments, get_all_industries, add_hero_logo, get_hero_logo, delete_hero_logo };
+
+            let topIndustries = await jobs_collection.aggregate([
+                  {
+                        $match: {
+                              "company_info.industry": { $exists: true, $ne: null, $ne: "" },
+                              expiry_date: { $gte: today },
+                        },
+                  },
+                  {
+                        $group: {
+                              _id: {
+                                    $toLower: { $trim: { input: "$company_info.industry" } },
+                              },
+                              job_count: { $sum: 1 },
+                        },
+                  },
+                  {
+                        $sort: { job_count: -1 },
+                  },
+                  {
+                        $limit: 15,
+                  },
+                  {
+                        $project: {
+                              _id: 0,
+                              industry: "$_id",
+                              job_count: 1,
+                        },
+                  },
+            ]).toArray();
+
+
+            if (topIndustries.length < 15) {
+                  const filledIndustries = new Set(topIndustries.map(item => item.industry));
+                  const allIndustries = await industry_collection.find({}).toArray();
+
+                  for (const industry of allIndustries) {
+                        const industryName = industry.name?.toLowerCase()?.trim();
+                        if (industryName && !filledIndustries.has(industryName)) {
+                              topIndustries.push({
+                                    industry: industryName,
+                                    job_count: 0,
+                              });
+                              filledIndustries.add(industryName);
+                        }
+                        if (topIndustries.length === 15) break;
+                  }
+            }
+
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Top 15 industries fetched successfully",
+                  data: topIndustries,
+            });
+      } catch (error) {
+            next(error);
+      }
+};
+
+
+module.exports = { create_skill, delete_skill, add_location, delete_location, add_position, delete_position, add_department, delete_department, add_industry, delete_industry, get_all_skills, get_all_locations, get_all_positions, get_all_departments, get_all_industries, add_hero_logo, get_hero_logo, delete_hero_logo, get_job_by_industry };
