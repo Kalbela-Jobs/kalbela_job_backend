@@ -26,7 +26,7 @@ const create_govt_jobs = async (req, res, next) => {
 const get_all_govt_jobs = async (req, res, next) => {
       try {
             const currentDate = new Date().toISOString();
-            const page_size = parseInt(req.query.page_size) || 15;
+            const page_size = parseInt(req.query.limit) || 15;
             const page = parseInt(req.query.page) || 1;
             const skip = (page - 1) * page_size;
             const limit = parseInt(page_size);

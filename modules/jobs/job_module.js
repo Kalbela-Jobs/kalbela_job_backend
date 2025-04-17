@@ -498,6 +498,7 @@ const get_job_info_by_id = async (req, res, next) => {
 
             const find_job = await jobs_collection.findOne({ url })
             if (find_job) {
+                  await jobs_collection.updateOne({ url }, { $inc: { view_count: 1 } })
                   response_sender({
                         res,
                         status_code: 200,
@@ -521,7 +522,7 @@ const org_all_jobs_with_info = async (req, res, next) => {
             delete company_info.status
             delete company_info.priority
             const currentDate = new Date().toISOString();
-          
+
             const jobs = await jobs_collection
                   .find(
                         { "company_info.company_id": company_info._id.toString(), status: true, },
@@ -559,7 +560,7 @@ const org_all_jobs_with_info = async (req, res, next) => {
 const get_featured_jobs = async (req, res, next) => {
       try {
             const currentDate = new Date().toISOString();
-            const page_size = parseInt(req.query.page_size) || 15;
+            const page_size = parseInt(req.query.limit) || 15;
             const page = parseInt(req.query.page) || 1;
             const skip = (page - 1) * page_size;
 

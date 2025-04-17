@@ -254,4 +254,6 @@ const get_category_with_mega_category_with_jobs_count = async (req, res, next) =
 
 
 
+
+
 module.exports = { get_category, create_category, update_category, delete_category, get_mega_category, get_category_with_mega_category_with_jobs_count, top_five_category_with_mega_category_with_jobs_count };

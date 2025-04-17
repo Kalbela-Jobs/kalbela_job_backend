@@ -142,7 +142,7 @@ const skilled_jobs = async (req, res, next) => {
       try {
             const skilled_mega_category_id = "67861bad5dd8a9368083956d";
 
-            const page_size = parseInt(req.query.page_size) || 15;
+            const page_size = parseInt(req.query.limit) || 15;
             const page = parseInt(req.query.page) || 1;
             const skip = (page - 1) * page_size;
             const currentDate = new Date().toISOString();
@@ -153,7 +153,7 @@ const skilled_jobs = async (req, res, next) => {
                   status: true,
             }).project({ _id: 1 }).toArray();
 
-         
+
 
             const skilled_category_ids = skilled_categories.map(cat => cat._id.toString());
 
