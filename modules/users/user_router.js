@@ -1,7 +1,7 @@
 const express = require('express');
 const { apply_jobs, get_applied_jobs } = require('./Apply_jobs/Apply_jobs');
 const { save_jobs, get_saved_jobs } = require('./Save_jobs/Save_jobs');
-const { update_profile_data } = require('./update/update_profile');
+const { update_profile_data, update_profile_picture, update_profile_address, update_career_objective } = require('./update/update_profile');
 const { upload_resume, get_resume, delete_resume } = require('./Resume/Resume');
 const { upload_education, get_education, delete_education, update_education } = require('./education/education');
 const { post_certification, get_certification, delete_certification, update_certification } = require('./certifiaction/certification');
@@ -33,6 +33,10 @@ router.get('/get-experience', get_experience)
 router.delete('/delete-experience', delete_experience)
 router.patch('/update-experience', update_experience)
 router.get('/user-profile', get_user_profile)
+router.put('/update-profile-picture', update_profile_picture)
+router.put('/update-address', update_profile_address)
+router.put('/update-career-objective', update_career_objective)
+
 
 
 

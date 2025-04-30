@@ -4,9 +4,9 @@ const { response_sender } = require("../../hooks/respose_sender");
 
 const validateUpdateData = (data) => {
       const allowedFields = [
-            "fullName", "fatherName", "motherName", "dateOfBirth", "gender", "email",
-            "religion", "nationality", "passportNumber", "passportIssueDate",
-            "primaryMobile", "secondaryMobile", "alternateEmail", "height", "weight", "profile_picture", "language", "presentAddress", "permanentAddress", "preferences", "social_links"
+            "full_name", "father_name", "mother_name", "date_of_birth", "gender",
+            "religion", "nationality", "passport_number", "passport_issue_date", "nid",
+            "primary_mobile", "secondary_mobile", "alternate_email", "height", "weight", "profile_picture", "language", "present_address", "permanent_address", "preferences", "social_links"
       ];
 
       for (const key in data) {
@@ -19,15 +19,6 @@ const validateUpdateData = (data) => {
 const update_profile_data = async (req, res, next) => {
       try {
             const { id } = req.query;
-            if (!ObjectId.isValid(id)) {
-                  return response_sender({
-                        res,
-                        status_code: 400,
-                        error: true,
-                        message: "Invalid user ID",
-                  });
-            }
-
             const update_data = req.body;
             validateUpdateData(update_data);
 
@@ -108,4 +99,163 @@ const update_language = async (req, res, next) => {
       }
 };
 
-module.exports = { update_profile_data, update_language };
+const update_profile_picture = async (req, res, next) => {
+      try {
+            const { id } = req.query;
+            if (!ObjectId.isValid(id)) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Invalid user ID",
+                  });
+            }
+            if (!req.body.profile_picture) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Profile picture is required",
+                  });
+            }
+
+            await user_collection.updateOne(
+                  { _id: new ObjectId(id) },
+                  { $set: { profile_picture: req?.body?.profile_picture } }
+            );
+
+            const user = await user_collection.findOne({ _id: new ObjectId(id) });
+            if (!user) {
+                  return response_sender({
+                        res,
+                        status_code: 404,
+                        error: true,
+                        message: "User not found",
+                  });
+            }
+
+            delete user.password;
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Profile picture updated successfully",
+                  data: user,
+            });
+      } catch (error) {
+            next(error);
+      }
+};
+
+const update_profile_address = async (req, res, next) => {
+      try {
+            const { id } = req.query;
+            const permanent_address = {
+                  permanentArea: req?.body?.permanentArea,
+                  permanentCity: req?.body?.permanentCity,
+                  permanentCountry: req?.body?.permanentCountry,
+                  permanentDivision: req?.body?.permanentDivision,
+                  permanentAddress: req?.body?.permanentAddress,
+                  permanentFullAddress: req?.body?.permanentFullAddress
+            }
+            const present_address = {
+                  presentArea: req?.body?.presentArea,
+                  presentCity: req?.body?.presentCity,
+                  presentCountry: req?.body?.presentCountry,
+                  presentDivision: req?.body?.presentDivision,
+                  presentAddress: req?.body?.presentAddress,
+                  presentFullAddress: req?.body?.presentFullAddress
+            }
+            if (!permanent_address && !present_address) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Address is required",
+                  });
+            }
+
+            await user_collection.updateOne(
+                  { _id: new ObjectId(id) },
+                  { $set: { permanent_address, present_address } }
+            );
+
+            const user = await user_collection.findOne({ _id: new ObjectId(id) });
+            if (!user) {
+                  return response_sender({
+                        res,
+                        status_code: 404,
+                        error: true,
+                        message: "User not found",
+                  });
+            }
+
+            delete user.password;
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Address updated successfully",
+                  data: user,
+            });
+      } catch (error) {
+            next(error);
+      }
+}
+
+
+const update_career_objective = async (req, res, next) => {
+      try {
+            const { id } = req.query;
+            const career_objective = req?.body?.career_objective;
+
+            if (career_objective?.career_objective && career_objective?.expected_salary && career_objective?.job_level && career_objective?.job_nature && career_objective?.present_salary) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Career objective is required",
+                  });
+            }
+            if (!career_objective) {
+                  return response_sender({
+                        res,
+                        status_code: 400,
+                        error: true,
+                        message: "Career objective is required",
+                  });
+            }
+
+            await user_collection.updateOne(
+                  { _id: new ObjectId(id) },
+                  { $set: { career_objective } }
+            );
+
+            const user = await user_collection.findOne({ _id: new ObjectId(id) });
+            if (!user) {
+                  return response_sender({
+                        res,
+                        status_code: 404,
+                        error: true,
+                        message: "User not found",
+                  });
+            }
+
+            delete user.password;
+            response_sender({
+                  res,
+                  status_code: 200,
+                  error: false,
+                  message: "Career objective updated successfully",
+                  data: user,
+            });
+      } catch (error) {
+            next(error);
+      }
+};
+
+
+
+
+
+module.exports = { update_profile_data, update_language, update_profile_picture, update_profile_address, update_career_objective };
