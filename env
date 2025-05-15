@@ -1,6 +1,1 @@
-MONGO_URI=mongodb://munna:bossdb2024@120.50.6.150:27017/
-PORT = 5005
-SERVER_URL='https://server.kalbelajobs.com/api/v1'
-NODE_ENV='development'
-MAIL_ID ='noreplay@kalbelajobs.com'
-MAIL_PASS= 'noreplay@Pass#'
+
